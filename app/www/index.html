@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Nim Multiplayer Home</title>
+</head>
+
+<body>
+	
+	<header>
+		<h1>NIM MULTIPLAYER</h1>
+		<!-- logo img ??? -->
+	</header>
+
+	<main>
+		<section>
+			<button type="button">CREATE GAME ROOM</button>
+		</section>
+		<section>
+			<button type="button">LOGIN</button>
+			<button type="button">REGISTER</button>
+		</section>
+		 {{ message }}
+	</main>
+
+	<div id="movies-app" class="container-fluid">
+		<router-view></router-view>
+	</div>
+
+	<article>
+		<header> <h2>HOW TO PLAY</h2> </header>
+		bla bla instructions ...
+	</article>
+
+	<footer>
+	</footer>
+
+	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script src="https://npmcdn.com/vue-router/dist/vue-router.js"></script>
+	<!-- <script src="/static/js/home.js"></script> -->
+
+	<script>
+	  	new Vue({
+				el: 'main',
+				data: { message: 'Hello World! '}
+			})
+	</script>
+
+<!--
+	<script>
+	  	var app = new Vue({
+			router,
+			el: '#main',
+			data: { message: 'Hello World! '},
+			components: {
+			    'navbar': Navbar,
+			}
+			mounted() {
+
+			}
+		});
+	</script>
+-->
+</body>
+
+</html>
