@@ -4,65 +4,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Nim Multiplayer Home</title>
+  <title>Nim Multiplayer</title>
 </head>
 
 <body>
-  <header>
-    <h1>NIM MULTIPLAYER</h1>
-    <img src="/static/img/Nim.png" alt="logo" width="200" height="200">
-  </header>
 
   <main>
-    <router-view></router-view>
-
-    <section>
-      <button type="button">CREATE GAME ROOM</button>
-    </section>
-    <section>
-      <router-link to="/">Home</router-link>
-      <router-link to="/foo">Foo</router-link>
-
-      
-      
-      <router-link to="/foo">
-        <button type="button">
-          Click Me!
-        </button>
-      </router-link>
-
-      <button type="button">LOGIN</button>
-      <button type="button">REGISTER</button>
-    </section>
+    <router-view/>
   </main>
 
-  <article>
-    <header>
-      <h2>HOW TO PLAY</h2>
-    </header>
-    bla bla instructions ...
-  </article>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
-  <footer>
-  </footer>
-
-  <!-- vue imports -->
+  <!-- imports related to home.js -->
+  <script src="/static/js/elements/mainHeader.js"></script>
+  <script src="/static/js/elements/loginSection.js"></script>
+  <script src="/static/js/elements/howToPlay.js"></script>
+  <script src="/static/js/elements/informativeLinks.js"></script>
+  <script src="/static/js/index/home.js"></script>
+  <!-- the S.P.A. home handles these sub routes -->
+  <script src="/static/js/routes/login.js"></script>
+  <script src="/static/js/routes/register.js"></script>
+  <script src="/static/js/routes/404.js"></script>
+  <!-- Vue remote and local imports -->
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   <script src="https://npmcdn.com/vue-router/dist/vue-router.js"></script>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-  
-  <script src="/static/js/index/home.js"></script>
-  <script src="/static/js/index/404.js"></script>
   <script src="/static/js/index/vue-router.js"></script>
 
   <script>
     const app = new Vue({
       router,
-      el: 'main'
-      // data: { message: 'Hello World! '}
-      /* components: {
-          'navbar': Navbar,
-      } */
+      el: 'main',
     })
   </script>
 

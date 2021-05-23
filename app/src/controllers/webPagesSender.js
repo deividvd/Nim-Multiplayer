@@ -3,6 +3,5 @@ exports.index = function(req, res) {
 }
 
 exports.gameRoom = function(req, res) {
-  res.sendFile(appRoot + '/www/gameRoom.html')
-  // req.params.id ---- gameRoomId
+  res.sendFile(appRoot + '/www/game-room.html')
 }
