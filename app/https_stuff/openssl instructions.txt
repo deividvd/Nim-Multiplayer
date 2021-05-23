@@ -1,0 +1,10 @@
+1°
+execute openssl (FireDaemon version)
+
+2°
+req -nodes -new -x509 -keyout server.key -out server.cert
+
+3°
+TLS certificate initialization parameters:
+	- FQDN: localhost
+	- the other parameters can be left empty

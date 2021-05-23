@@ -1,7 +1,8 @@
 createGlobalAppRoot()
 createDBConnection()
 const app = createExpressApp()
-startServer(app)
+startHTTPSServer(app)
+
 
 function createGlobalAppRoot() {
   const path = require('path')
@@ -16,8 +17,8 @@ function createDBConnection() {
         useFindAndModify: false,
         useUnifiedTopology: true
       })
-    .then(() => console.log('MongoDB Connected'))
-    .catch((err) => console.log('MongoDB Connection Error: ' + err))
+    .then(() => console.log('\n MongoDB Connected'))
+    .catch((err) => console.log('\n MongoDB Connection Error: ' + err))
 }
 
 function createExpressApp() {
@@ -48,11 +49,33 @@ function createExpressApp() {
   }
 }
 
-function startServer(app) {
-  const PORT = 3000
-  app.listen(PORT, function () {
-    console.log('Node API server started on port ' + PORT)
-  });
+function startHTTPSServer(app) {
+  const credentials = createHTTPSCredential()
+  const httpsServer = createHTTPSServer(credentials, app)
+  startServer(httpsServer)
+
+  function createHTTPSCredential() {
+    const fs = require('fs')
+    const privateKey = fs.readFileSync('https_stuff/server.key', 'utf8')
+    const certificate = fs.readFileSync('https_stuff/server.cert', 'utf8')
+    return {key: privateKey, cert: certificate}
+  }
+
+  function createHTTPSServer(credentials, app) {
+    const https = require('https')
+    return https.createServer(credentials, app)
+  }
+
+  function startServer(httpsServer) {
+    const port = 3000
+    httpsServer.listen(port, function() {
+      console.log('\n HTTPS Node Express server started on port ' + port)
+      console.log("\n N.B.: the server will listen on:")
+      console.log("\n https://localhost:/" + port)
+      console.log("\n ... and the connection will be insecure! ( https certificate self-signed )")
+      console.log("")
+    })
+  }
 }
 
 // TODO: ????
