@@ -14,21 +14,29 @@
   </main>
 
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
-  <!-- imports related to home.js -->
-  <script src="/static/js/elements/mainHeader.js"></script>
-  <script src="/static/js/elements/loginSection.js"></script>
-  <script src="/static/js/elements/howToPlay.js"></script>
-  <script src="/static/js/elements/informativeLinks.js"></script>
-  <script src="/static/js/index/home.js"></script>
-  <!-- the S.P.A. home handles these sub routes -->
-  <script src="/static/js/routes/login.js"></script>
+  <!-- vue components used by vue components with a related route -->
+  <script src="/static/js/elements/main-header.js"></script>
+  <script src="/static/js/elements/login-section.js"></script>
+  <script src="/static/js/elements/how-to-play.js"></script>
+  <!-- vue components with a related route, mapped by vue-router -->
+  <script src="/static/js/routes/home.js"></script>
   <script src="/static/js/routes/register.js"></script>
+  <script src="/static/js/routes/login.js"></script>
+  <script src="/static/js/routes/account.js"></script>
+  <script src="/static/js/routes/privacy.js"></script>
+  <script src="/static/js/routes/terms-of-service.js"></script>
   <script src="/static/js/routes/404.js"></script>
-  <!-- Vue remote and local imports -->
+  <script src="/static/js/routes/create-game-room.js"></script>
+  <!-- vue libraries -->
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   <script src="https://npmcdn.com/vue-router/dist/vue-router.js"></script>
-  <script src="/static/js/index/vue-router.js"></script>
+  <!-- vue router imports -->
+  <script src="/static/js/shared-routes.js"></script>
+  <script src="/static/js/vue-router.js"></script>
+  <!-- utilities used in some vue components' methods -->
+  <!-- <script src="/static/js/object-utilities.js"></script> -->
+  <script src="/static/js/string-utilities.js"></script>
+  <script src="/static/js/routing-utilities.js"></script>
 
   <script>
     const app = new Vue({
