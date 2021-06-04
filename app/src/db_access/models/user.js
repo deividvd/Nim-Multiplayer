@@ -5,5 +5,5 @@ module.exports = function(mongoose) {
     email: String,
     password: String
   })
-  return mongoose.model('User', UserSchema)
+  return mongoose.model('User', UserSchema) // in mongoose 'User'= users collection
 }

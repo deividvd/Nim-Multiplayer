@@ -1,14 +1,21 @@
+/*
 const mongoose = require('mongoose')
-const UserSchema = require("/models/user.js")
-User = UserSchema(mongoose)
+const UserSchema = require('../models/user')
+const User = UserSchema(mongoose)
 
-exports.testdb = function(req, res) {
-  User.findOne({}, {}, { sort: { released: -1 } }, (err, movie) => {
-    if (err || movie == null) {
-      res.send("error")
-    }
-    else {
-      res.json(movie)
-    }
-  })
+exports.findUser = function(callback) {
+  return {
+    byEmail,
+    byUsername,
+  }
+
+  function byEmail(email) {
+    User.findOne({ email: email }, callback)
+  }
+
+  function byUsername(username) {
+    User.findOne({ _id: username }, callback)
+  }
+
 }
+*/

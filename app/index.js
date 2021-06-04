@@ -11,14 +11,18 @@ function createGlobalAppRoot() {
 
 function createDBConnection() {
   const mongoose = require('mongoose')
-  mongoose.connect('mongodb://localhost/nimMultiplayer',
-      {
-        useNewUrlParser: true,
-        useFindAndModify: false,
-        useUnifiedTopology: true
-      })
-    .then(() => console.log('\n MongoDB Connected'))
-    .catch((err) => console.log('\n MongoDB Connection Error: ' + err))
+  const mongooseSettings = { 
+    useNewUrlParser: true, 
+    useFindAndModify: false, 
+    useUnifiedTopology: true
+  }
+  mongoose.connect('mongodb://localhost/nim_multiplayer', mongooseSettings)
+    .then(() => {
+      console.log('\n MongoDB Connected')
+    })
+    .catch((err) => {
+      console.log('\n MongoDB Connection Error: ' + err)
+    })
 }
 
 function createExpressApp() {
@@ -50,15 +54,18 @@ function createExpressApp() {
 }
 
 function startHTTPSServer(app) {
-  const credentials = createHTTPSCredential()
-  const httpsServer = createHTTPSServer(credentials, app)
+  const httpsCredentials = createHTTPSCredential()
+  const httpsServer = createHTTPSServer(httpsCredentials, app)
   startServer(httpsServer)
 
   function createHTTPSCredential() {
     const fs = require('fs')
     const privateKey = fs.readFileSync('https_stuff/server.key', 'utf8')
     const certificate = fs.readFileSync('https_stuff/server.cert', 'utf8')
-    return {key: privateKey, cert: certificate}
+    return {
+      key: privateKey,
+      cert: certificate
+    }
   }
 
   function createHTTPSServer(credentials, app) {
@@ -68,13 +75,15 @@ function startHTTPSServer(app) {
 
   function startServer(httpsServer) {
     const port = 3000
-    httpsServer.listen(port, function() {
-      console.log('\n HTTPS Node Express server started on port ' + port)
-      console.log("\n N.B.: the server will listen on:")
-      console.log("\n https://localhost:/" + port)
-      console.log("\n ... and the connection will be insecure! ( https certificate self-signed )")
-      console.log("")
-    })
+    httpsServer.listen(port, 
+        function() {
+          console.log('\n HTTPS Node Express server started on port ' + port)
+          console.log("\n N.B.: the server will listen on:")
+          console.log("\n https://localhost:/" + port)
+          console.log("\n ... and the connection will be insecure! ( https certificate self-signed )")
+          console.log("")
+        }
+    )
   }
 }
 

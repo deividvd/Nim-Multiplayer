@@ -1,28 +1,23 @@
 module.exports = function(app) {
-  const userOperations = require('./controllers/userOperations')
 
-  /*
-  app.route('/login')
-    .get()
-    .post()
+  createUserRoutes(app)
 
-  app.route('/register')
-    .post(userOperations.register)
-  */
+  //const gameController = require('./controllers/gameController')
 
-  /*
-  // game
-  app.route('/game-room/:id')
-    .post(function (req, res) {
-      // invio elementi eliminati ...
-    });
-  */
-  
+  //app.route('/create-game-room/').post(gameController.createGameRoom)
+
   const webPagesSender = require('./controllers/webPagesSender')
-
-  app.route('/game-room')
+  
+  app.route('/game-room/:id')
     .get(webPagesSender.gameRoom)
-
+    //.post(gameController.applyMove)
   app.use(webPagesSender.index) // app.route('/').get(webPagesSender.index);
 
+}
+
+function createUserRoutes(app) {
+  const userController = require('./controllers/userController')
+  app.route('/register').post(userController.register)
+  app.route('/login').post(userController.login)
+  // app.route('/account').post(userController.delete)
 }
