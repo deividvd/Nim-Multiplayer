@@ -1,7 +1,7 @@
 createGlobalAppRoot()
 createDBConnection()
 const app = createExpressApp()
-startHTTPSServer(app)
+startHTTPSServer()
 
 
 function createGlobalAppRoot() {
@@ -20,42 +20,42 @@ function createDBConnection() {
     .then(() => {
       console.log('\n MongoDB Connected')
     })
-    .catch((err) => {
-      console.log('\n MongoDB Connection Error: ' + err)
+    .catch((error) => {
+      console.log('\n MongoDB Connection Error: ' + error)
     })
 }
 
 function createExpressApp() {
   const express = require('express')
   const app = express()
-  serveFrontEndFiles(app, express)
-  useJSONRequest(app, express)
-  enableCORS(app)
-  createRoutes(app)
+  serveFrontEndFiles()
+  useJSONRequest()
+  enableCORS()
+  createRoutes()
   return app
 
-  function serveFrontEndFiles(app, express) {
+  function serveFrontEndFiles() {
     app.use('/static', express.static(__dirname + '/public'))
   }
 
-  function useJSONRequest(app, express) { // e.g.: POST request's body in JSON
+  function useJSONRequest() { // e.g.: POST request's body in JSON
     app.use(express.json())
   }
 
-  function enableCORS(app) { // e.g.: enable AJAX request
+  function enableCORS() { // e.g.: enable AJAX request
     const cors = require('cors')
     app.use(cors())
   }
 
-  function createRoutes(app) {
+  function createRoutes() {
     const routes = require('./src/routes.js')
     routes(app)
   }
 }
 
-function startHTTPSServer(app) {
+function startHTTPSServer() {
   const httpsCredentials = createHTTPSCredential()
-  const httpsServer = createHTTPSServer(httpsCredentials, app)
+  const httpsServer = createHTTPSServer()
   startServer(httpsServer)
 
   function createHTTPSCredential() {
@@ -68,9 +68,9 @@ function startHTTPSServer(app) {
     }
   }
 
-  function createHTTPSServer(credentials, app) {
+  function createHTTPSServer() {
     const https = require('https')
-    return https.createServer(credentials, app)
+    return https.createServer(httpsCredentials, app)
   }
 
   function startServer(httpsServer) {
@@ -89,7 +89,7 @@ function startHTTPSServer(app) {
 
 // TODO: ????
 
-function initExpressSession(app) {
+function initExpressSession() {
   var session = require('express-session')
   var login_session = {
     secret: ['secret_for_sign_cookie_session_id', 'this_secret_and_the_other_are_for_veryfing_signature_in_requests'],
