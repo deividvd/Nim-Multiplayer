@@ -1,19 +1,22 @@
 const TermsOfService = {
   components: {
-    'main-header': MainHeader
+    'app-header': AppHeader
   },
   template:
   `
   <div>
 
-    <main-header/>
+    <app-header/>
 
-    <section>
-      <h2> TERMS OF USE </h2>
-      <p>
-        Terms of Service here ...
-      </p>
-    </section>
+    <main>
+      <section>
+        <h2> TERMS OF USE </h2>
+        <p>
+          Terms of Service here ...
+        </p>
+      </section>
+    </main>
+    
   </div>
   `
 }

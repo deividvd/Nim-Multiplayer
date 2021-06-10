@@ -1,19 +1,22 @@
 const Privacy = {
   components: {
-    'main-header': MainHeader
+    'app-header': AppHeader
   },
   template:
   `
   <div>
 
-    <main-header/>
+    <app-header/>
 
-    <section>
-      <h2> PRIVACY </h2>
-      <p>
-        Privacy Terms here ...
-      </p>
-    </section>
+    <main>
+      <section>
+        <h2> PRIVACY </h2>
+        <p>
+          Privacy Terms here ...
+        </p>
+      </section>
+    </main>
+
   </div>
   `
 }

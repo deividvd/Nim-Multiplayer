@@ -1,45 +1,47 @@
 const Login = {
   components: {
-    'main-header': MainHeader,
+    'app-header': AppHeader,
   },
   template:
   `
   <div>
 
-    <main-header/>
+    <app-header/>
 
-    <section>
-      <h2> LOG IN </h2>
+    <main>
+      <section>
+        <h2> LOG IN </h2>
 
-      <form>
-        <p v-html="errorMessage"></p>
-        <br/>
-        <label for="username-email"> Username or Email </label>
-        <input id="username-email" v-model="usernameOrEmail" type="text" placeholder="Username or Email" />
-        <br/>
-        <label for="password"> Password </label>
-        <input id="password" v-model="password" type="password" placeholder="Password" />
-        <br/>
-        <button v-on:click="login"> LOG IN </button>
-      </form>
-    </section>
+        <form>
+          <p v-html="errorMessage"></p>
+          <br/>
+          <label for="username"> Username </label>
+          <input id="username" v-model="username" type="text" placeholder="Username" />
+          <br/>
+          <label for="password"> Password </label>
+          <input id="password" v-model="password" type="password" placeholder="Password" />
+          <br/>
+          <button v-on:click="login"> LOG IN </button>
+        </form>
+      </section>
+    </main>
 
   </div>
   `,
   data() {
     return {
       errorMessage: '',
-      usernameOrEmail: '',
+      username: '',
       password: ''
     }
   },
   methods: {
     login: function(event) {
       event.preventDefault()
-      this.errorMessage = gatherErrorMessagesIn(this.usernameOrEmail, this.password)
+      this.errorMessage = gatherErrorMessagesIn(this.username, this.password)
       if (noErrorIn(this.errorMessage)) {
         const credential = {
-          usernameOrEmail: this.usernameOrEmail,
+          username: this.username,
           password: this.password
         }
         axios.post("https://localhost:3000/login", credential)
@@ -56,13 +58,13 @@ const Login = {
           })
       }
 
-      function gatherErrorMessagesIn(usernameOrEmail, password) {
+      function gatherErrorMessagesIn(username, password) {
         var htmlErrorMessage = ''
         applyMissingInputError()
         return htmlErrorMessage
 
         function applyMissingInputError() {
-          if (usernameOrEmail === '' || password === '') {
+          if (username === '' || password === '') {
             htmlErrorMessage = 
                 htmlErrorMessage.concat('Please fill in all fields for register. <br/>')
           }

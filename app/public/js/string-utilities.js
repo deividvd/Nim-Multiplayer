@@ -1,4 +1,4 @@
-const StringUtilities = Object.freeze( function(string) {
+function stringUtilities(string) {
   return {
     doesExist
   }
@@ -11,4 +11,4 @@ const StringUtilities = Object.freeze( function(string) {
     }
     return false
   }
-})
+}

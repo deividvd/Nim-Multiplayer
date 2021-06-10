@@ -9,7 +9,7 @@ const HowToPlay = {
     <p>
       Il giocatore seleziona e rimuove 1 o più bastoncini da una sola riga!
       <br/>
-      <b>ATTENZIONE</b>: si possono selezionare solo bastoncini adiacenti tra loro!
+      <b>ATTENZIONE</b>: si possono selezionare solo <span>bastoncini adiacenti tra loro</span>!
       <br/>
       Se tra 2 bastoncini c'è un bastoncino rimosso... i 2 bastoncini non sono adiacenti :(
     </p>

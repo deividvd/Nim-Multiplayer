@@ -1,6 +1,6 @@
 const CreateGameRoom = {
   components: {
-    'main-header': MainHeader,
+    'app-header': AppHeader,
     'login-section': LoginSection,
     'how-to-play': HowToPlay
   },
@@ -8,7 +8,7 @@ const CreateGameRoom = {
   `
   <div>
 
-    <main-header/>
+    <app-header/>
 
     <section>
       <p>

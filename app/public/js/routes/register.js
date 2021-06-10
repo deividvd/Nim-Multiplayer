@@ -1,41 +1,43 @@
 const Register = {
   components: {
-    'main-header': MainHeader,
+    'app-header': AppHeader,
   },
   template:
   `
   <div>
 
-    <main-header/>
+    <app-header/>
 
-    <section>
-      <h2> CREATE YOUR ACCOUNT </h2>
+    <main>
+      <section>
+        <h2> CREATE YOUR ACCOUNT </h2>
 
-      <form>
-        <p v-html="errorMessage"></p>
-        <br/>
-        <label for="username"> Username </label>
-        <input id="username" v-model="username" type="text" placeholder="Enter Username" />
-        <br/>
-        <label for="email"> Email </label>
-        <input id="email" v-model="email" type="text" placeholder="Enter Email" />
-        <br/>
-        <label for="password"> Password </label>
-        <input id="password" v-model="password" type="password" placeholder="Enter Password" />
-        <br/>
-        <label for="confirm-password"> Confirm Password </label>
-        <input id="confirm-password" v-model="confirmPassword" type="password" placeholder="Enter Password" />
-        <br/>
-        <p>
-          The password must have: 
-          {{ passwordRequiredLenght }} characters,
-          including a number, a lowercase and an uppercase letter.
-        </p>
-        <br/>
-        <button v-on:click="register"> CREATE ACCOUNT </button>
-      </form>
-    </section>
-
+        <form>
+          <p v-html="errorMessage"></p>
+          <br/>
+          <label for="username"> Username </label>
+          <input id="username" v-model="username" type="text" placeholder="Enter Username" />
+          <br/>
+          <label for="email"> Email </label>
+          <input id="email" v-model="email" type="email" placeholder="Enter Email" />
+          <br/>
+          <label for="password"> Password </label>
+          <input id="password" v-model="password" type="password" placeholder="Enter Password" />
+          <br/>
+          <label for="confirm-password"> Confirm Password </label>
+          <input id="confirm-password" v-model="confirmPassword" type="password" placeholder="Enter Password" />
+          <br/>
+          <p>
+            The password must have: 
+            {{ passwordRequiredLenght }} characters,
+            including a number, a lowercase and an uppercase letter.
+          </p>
+          <br/>
+          <button v-on:click="register"> CREATE ACCOUNT </button>
+        </form>
+      </section>
+    </main>
+    
   </div>
   `,
   data() {

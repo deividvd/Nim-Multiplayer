@@ -1,4 +1,4 @@
-const MainHeader = {
+const AppHeader = {
   template:
   `
   <header>

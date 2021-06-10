@@ -9,16 +9,16 @@
 
 <body>
 
-  <main>
+  <div id="nim-app">
     <router-view/>
-  </main>
+  </div>
 
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-  <!-- vue components used by vue components with a related route -->
-  <script src="/static/js/elements/main-header.js"></script>
+  <!-- components used by router's components -->
+  <script src="/static/js/elements/app-header.js"></script>
   <script src="/static/js/elements/login-section.js"></script>
   <script src="/static/js/elements/how-to-play.js"></script>
-  <!-- vue components with a related route, mapped by vue-router -->
+  <!-- router's components -->
   <script src="/static/js/routes/home.js"></script>
   <script src="/static/js/routes/register.js"></script>
   <script src="/static/js/routes/login.js"></script>
@@ -30,10 +30,10 @@
   <!-- vue libraries -->
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   <script src="https://npmcdn.com/vue-router/dist/vue-router.js"></script>
-  <!-- vue router imports -->
+  <!-- router -->
   <script src="/static/js/shared-routes.js"></script>
   <script src="/static/js/vue-router.js"></script>
-  <!-- utilities used in some vue components' methods -->
+  <!-- utilities used in some components -->
   <!-- <script src="/static/js/object-utilities.js"></script> -->
   <script src="/static/js/string-utilities.js"></script>
   <script src="/static/js/routing-utilities.js"></script>
@@ -41,7 +41,7 @@
   <script>
     const app = new Vue({
       router,
-      el: 'main',
+      el: "#nim-app"
     })
   </script>
 

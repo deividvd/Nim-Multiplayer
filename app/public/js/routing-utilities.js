@@ -11,7 +11,7 @@
  * if the user reload the (route) page, the parameters are lost,
  * then this object will route to Home instead of the previous page.
  */
-const RoutingUtilities = Object.freeze( function(vueComponent) {
+function routingUtilities(vueComponent) {
   return {
     addParameters: function(dataObject) {
       return {
@@ -32,26 +32,26 @@ const RoutingUtilities = Object.freeze( function(vueComponent) {
 
       function backToPreviousRoute() {
         const previousRouteName = vueComponent.$route.params.previousRouteName
-        if (StringUtilities(previousRouteName).doesExist()) {
+        if (stringUtilities(previousRouteName).doesExist()) {
           switch (previousRouteName) {
-            case CreateGameRoomRoute.name:
-              backTo(CreateGameRoomRoute)
+            case createGameRoomRoute.name:
+              backTo(createGameRoomRoute.name)
               break
             default:
-              backTo(HomeRoute)
+              backTo(homeRoute)
           }
         } else {
-          backTo(HomeRoute)
+          backTo(homeRoute)
         }
 
-        function backTo(destinationRoute) {
+        function backTo(previousRouteName) {
           const router = vueComponent.$parent.$router
           router.push({
-            name: destinationRoute.name,
+            name: previousRouteName,
             params: dataObject
           })
         }
       }
     }
   }
-})
+}

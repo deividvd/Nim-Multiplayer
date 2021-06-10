@@ -1,6 +1,6 @@
 const Home = {
   components: {
-    'main-header': MainHeader,
+    'app-header': AppHeader,
     'login-section': LoginSection,
     'how-to-play': HowToPlay
   },
@@ -8,7 +8,7 @@ const Home = {
   `
   <div>
 
-    <main-header/>
+    <app-header/>
 
     <section>
       <p>
@@ -16,11 +16,13 @@ const Home = {
       </p>
     </section>
 
-    <section>
-      <router-link to="/create-game-room">
-        <button type="button"> CREATE GAME ROOM </button>
-      </router-link>
-    </section>
+    <main>
+      <section>
+        <router-link to="/create-game-room">
+          <button type="button"> CREATE GAME ROOM </button>
+        </router-link>
+      </section>
+    </main>
 
     <login-section/>
 
@@ -40,10 +42,10 @@ const Home = {
   `,
   methods: {
     register: function() {
-      RoutingUtilities(this).addParameters({}).goTo(RegisterRoute)
+      routingUtilities(this).addParameters({}).goTo(RegisterRoute)
     },
     login: function() {
-      RoutingUtilities(this).addParameters({}).goTo(LoginRoute)
+      routingUtilities(this).addParameters({}).goTo(LoginRoute)
     }
   }
 }
