@@ -17,10 +17,10 @@ function createDBConnection() {
     useUnifiedTopology: true
   }
   mongoose.connect('mongodb://localhost/nim_multiplayer', mongooseSettings)
-    .then(() => {
+    .then(function() {
       console.log('\n MongoDB Connected')
     })
-    .catch((error) => {
+    .catch(function(error) {
       console.log('\n MongoDB Connection Error: ' + error)
     })
 }
@@ -56,7 +56,7 @@ function createExpressApp() {
 function startHTTPSServer() {
   const httpsCredentials = createHTTPSCredential()
   const httpsServer = createHTTPSServer()
-  startServer(httpsServer)
+  startServer()
 
   function createHTTPSCredential() {
     const fs = require('fs')
@@ -73,7 +73,7 @@ function startHTTPSServer() {
     return https.createServer(httpsCredentials, app)
   }
 
-  function startServer(httpsServer) {
+  function startServer() {
     const port = 3000
     httpsServer.listen(port, 
         function() {

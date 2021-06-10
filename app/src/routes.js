@@ -16,7 +16,7 @@ module.exports = function(app) {
 }
 
 function createUserRoutes(app) {
-  const userController = require('./controllers/userController')
+  const userController = require('./controllers/user')
   app.route('/register').post(userController.register)
   app.route('/login').post(userController.login)
   // app.route('/account').post(userController.delete)
