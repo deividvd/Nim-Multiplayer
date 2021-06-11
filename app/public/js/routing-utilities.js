@@ -34,14 +34,14 @@ function routingUtilities(vueComponent) {
         const previousRouteName = vueComponent.$route.params.previousRouteName
         if (stringUtilities(previousRouteName).doesExist()) {
           switch (previousRouteName) {
-            case createGameRoomRoute.name:
-              backTo(createGameRoomRoute.name)
+            case CreateGameRoomRoute.name:
+              backTo(CreateGameRoomRoute.name)
               break
             default:
-              backTo(homeRoute)
+              backTo(HomeRoute.name)
           }
         } else {
-          backTo(homeRoute)
+          backTo(HomeRoute.name)
         }
 
         function backTo(previousRouteName) {

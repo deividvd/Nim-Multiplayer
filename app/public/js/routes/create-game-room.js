@@ -56,10 +56,10 @@ const CreateGameRoom = {
   `,
   methods: {
     register: function() {
-      RoutingUtilities(this).addParameters({}).goTo(RegisterRoute)
+      routingUtilities(this).addParameters({}).goTo(RegisterRoute)
     },
     login: function() {
-      RoutingUtilities(this).addParameters({}).goTo(LoginRoute)
+      routingUtilities(this).addParameters({}).goTo(LoginRoute)
     },
     createGameRoom: function(event) {
       event.preventDefault()

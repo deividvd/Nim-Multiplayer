@@ -1,21 +1,21 @@
-/*
 const mongoose = require('mongoose')
-const UserSchema = require('../models/user')
-const User = UserSchema(mongoose)
+const UserModel = require('./models/user')
+const User = UserModel(mongoose)
 
-exports.findUser = function(callback) {
-  return {
-    byEmail,
-    byUsername,
-  }
 
-  function byEmail(email) {
-    User.findOne({ email: email }, callback)
-  }
-
-  function byUsername(username) {
-    User.findOne({ _id: username }, callback)
-  }
-
+exports.findUserByEmail = function(email) {
+  return User.findOne({ email: email }).lean()
 }
-*/
+  
+exports.findUserByUsername = function(username) {
+  return User.findById(username).lean()
+}
+
+exports.insertNewUser = function(username, email, password) {
+  const newUser = new User({
+    _id: username,
+    email: email,
+    password: password
+  })
+  return newUser.save()
+}

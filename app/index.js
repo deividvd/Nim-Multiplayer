@@ -17,12 +17,8 @@ function createDBConnection() {
     useUnifiedTopology: true
   }
   mongoose.connect('mongodb://localhost/nim_multiplayer', mongooseSettings)
-    .then(function() {
-      console.log('\n MongoDB Connected')
-    })
-    .catch(function(error) {
-      console.log('\n MongoDB Connection Error: ' + error)
-    })
+    .then(() => { console.log('\n MongoDB Connected') })
+    .catch((error) => { console.log('\n MongoDB Connection Error: ' + error) })
 }
 
 function createExpressApp() {

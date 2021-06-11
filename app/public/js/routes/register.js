@@ -55,7 +55,7 @@ const Register = {
       event.preventDefault()
       this.errorMessage = gatherErrorMessagesIn(this.username, this.email, 
           this.password, this.confirmPassword, this.passwordRequiredLenght)
-      if (noErrorIn(this.errorMessage)) {
+      if (this.errorMessage === '') {
         const credential = {
           username: this.username,
           email: this.email,
@@ -63,21 +63,24 @@ const Register = {
         }
         axios.post("https://localhost:3000/register", credential)
           .then(response => {
-            // response === status 201
-            const registrationMessage = 'Congratulations, your account '
-                + 'has been successfully created!'
-            const dataObject = {message: registrationMessage}
-            RoutingUtilities(this).addParameters(dataObject).backToPreviousRoute()
+            if (response.data.success) {
+              const registrationMessage = 'Congratulations, your account has been successfully created!'
+              const nextPageParameters = { message: registrationMessage }
+              routingUtilities(this).addParameters(nextPageParameters).backToPreviousRoute()
+            } else {
+              if (response.data.errorMessage) {
+                this.errorMessage = response.data.errorMessage
+              } else {
+                this.errorMessage = 'Unknow error.s'
+              }
+            }
           })
           .catch(error => {
-            // TODO check server errors ??? (status == 500 ...)
             this.errorMessage = error
           })
       }
 
-
-      function gatherErrorMessagesIn(username, email, 
-            password, confirmPassword, passwordRequiredLenght) {
+      function gatherErrorMessagesIn(username, email, password, confirmPassword, passwordRequiredLenght) {
         var htmlErrorMessage = ''
         applyMissingInputError()
         applyPasswordsDoNotMatchError()
@@ -129,10 +132,6 @@ const Register = {
                 htmlErrorMessage.concat('The password must contain a lowercase letter.')
           }
         }
-      }
-      
-      function noErrorIn(errorMessage) {
-        return (errorMessage === '')
       }
     }
   }

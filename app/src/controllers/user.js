@@ -1,34 +1,56 @@
+const RegisterErrors = require('../services/user/registerErrors')
+const LoginErrors = require('../services/user/loginErrors')
 const usersCollection = require('../db_access/user')
 const passwordEncryption = require('../services/user/passwordEncryption')
-const registerErrors = require('../services/user/registerErrors')
 
 exports.register = function(req, res) {
   const credentials = req.body
   const email = credentials.email
   const username = credentials.username
-  const errors = registerErrors
+  const errorReport = new RegisterErrors()
   const findUserByEmail = usersCollection.findUserByEmail(email)
-    .then(errors.reportExistingEmail)
-    .catch(errors.getLibraryErrors.reportDB)
+    .then((user) => { errorReport.reportExistingEmail(user) })
   const findUserByUsername = usersCollection.findUserByUsername(username)
-    .then(errors.reportExistingUsername)
-    .catch(errors.getLibraryErrors.reportDB)
+    .then((user) => { errorReport.reportExistingUsername(user) })
   Promise.all([findUserByEmail, findUserByUsername])
-    .then(saveUserIntoDB)
-    .catch(sendErrorResponse)
+    .then((results) => {
+      if (errorReport.noError()) {
+        insertNewUserIntoDB()
+      } else {
+        const errorMessage = errorReport.obtainErrorMessage()
+        res.send({ errorMessage: errorMessage })
+      }
+    })
+    .catch((dbError) => { sendErrorResponse(res).databaseError(dbError) })
 
-  function saveUserIntoDB() {
-    if (errors.noError()) {
-      console.log("POGGERS");
-    } else {
-      console.log("wtf");
-      console.log(errors.obtainError());
-    }
+  function insertNewUserIntoDB() {
+    const password = credentials.password
+    passwordEncryption.encrypt(password)
+      .then((passwordHashed) => {
+        usersCollection.insertNewUser(username, email, passwordHashed)
+          .then((result) => { res.status(201).send({ success: "success" })})
+          .catch((dbError) => { sendErrorResponse(res).databaseError(dbError) })
+      })
+      .catch((encryptError) => { sendErrorResponse(res).encryptError(encryptError) })
+  }
+}
+
+function sendErrorResponse(response) {
+  return {
+    databaseError,
+    encryptError
   }
 
-  function sendErrorResponse(error) {
-    // const error = errors.getError()
-    // res.status(error.code).send({ description: error.message})
+  function databaseError(dbError) {
+    console.log('Database error:')
+    console.log(dbError)
+    response.status(500).send({ errorMessage: 'Internal Server Error 1' })
+  }
+
+  function encryptError(encryptError) {
+    console.log('Encryption error:')
+    console.log(encryptError)
+    response.status(500).send({ errorMessage: 'Internal Server Error 2' })
   }
 }
 
@@ -50,7 +72,6 @@ exports.login = function(req, res) {
       console.log("error = " + error);
       console.log("result = " + result);
   })
-
   function logInUser(res) {
     res.status(200)
     /*
@@ -66,4 +87,3 @@ exports.login = function(req, res) {
       description: 'wrong username or password'
     })
   }
-
