@@ -42,10 +42,10 @@ const Home = {
   `,
   methods: {
     register: function() {
-      routingUtilities(this).addParameters({}).goTo(RegisterRoute)
+      routingUtilitiesOf(this).addParameters({}).goTo(RegisterRoute)
     },
     login: function() {
-      routingUtilities(this).addParameters({}).goTo(LoginRoute)
+      routingUtilitiesOf(this).addParameters({}).goTo(LoginRoute)
     }
   }
 }

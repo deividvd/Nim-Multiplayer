@@ -2,7 +2,7 @@
  * This object is an utility for routing between two pages.
  * 
  * It uses the route parameters to save: the previous route name
- * and some custom data (probably these are inputs entered by the user).
+ * and some custom data inside an object (inputs entered by the user).
  * 
  * The route parameters are not inserted in the route path (URL),
  * in this way the URL is short and clean.
@@ -11,9 +11,9 @@
  * if the user reload the (route) page, the parameters are lost,
  * then this object will route to Home instead of the previous page.
  */
-function routingUtilities(vueComponent) {
+function routingUtilitiesOf(vueComponent) {
   return {
-    addParameters: function(dataObject) {
+    addParameters: function(customData) {
       return {
         goTo,
         backToPreviousRoute
@@ -25,14 +25,14 @@ function routingUtilities(vueComponent) {
           name: destinationRoute.name,
           params: {
             previousRouteName: vueComponent.$route.name,
-            data: dataObject
+            data: customData
           }
         })
       }
 
       function backToPreviousRoute() {
         const previousRouteName = vueComponent.$route.params.previousRouteName
-        if (stringUtilities(previousRouteName).doesExist()) {
+        if (stringUtilitiesOf(previousRouteName).isStringType()) {
           switch (previousRouteName) {
             case CreateGameRoomRoute.name:
               backTo(CreateGameRoomRoute.name)
@@ -48,7 +48,7 @@ function routingUtilities(vueComponent) {
           const router = vueComponent.$parent.$router
           router.push({
             name: previousRouteName,
-            params: dataObject
+            params: customData
           })
         }
       }
