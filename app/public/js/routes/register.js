@@ -25,7 +25,7 @@ const Register = {
           <input id="password" v-model="password" type="password" placeholder="Enter Password" />
           <br/>
           <label for="confirm-password"> Confirm Password </label>
-          <input id="confirm-password" v-model="confirmPassword" type="password" placeholder="Enter Password" />
+          <input id="confirm-password" v-model="confirmPassword" type="password" placeholder="Repeat Password" />
           <br/>
           <p>
             The password must have: 
@@ -66,12 +66,12 @@ const Register = {
             if (response.data.success) {
               const registrationMessage = 'Congratulations, your account has been successfully created!'
               const nextPageParameters = { message: registrationMessage }
-              routingUtilities(this).addParameters(nextPageParameters).backToPreviousRoute()
+              routingUtilitiesOf(this).addParameters(nextPageParameters).backToPreviousRoute()
             } else {
               if (response.data.errorMessage) {
                 this.errorMessage = response.data.errorMessage
               } else {
-                this.errorMessage = 'Unknow error.s'
+                this.errorMessage = 'Unknow error.'
               }
             }
           })

@@ -1,25 +1,25 @@
-const objectUtilities = require('../../utilities/object')
+const objectUtilitiesOf = require('../../utilities/object')
 
 class RegisterErrors {
   constructor() {
     this.emailExists = false
     this.usernameExists = false
   }
-  reportExistingEmail(user) {
-    if (objectUtilities(user).doesExist()) {
-      console.log('A client tried to register an existing email')
+
+  reportExistingEmailIfExist(user) {
+    if (objectUtilitiesOf(user).isObjectType()) {
+      console.log('Register error: a client tried to register an existing email')
       this.emailExists = true
     }
   }
-  reportExistingUsername(user) {
-    if (objectUtilities(user).doesExist()) {
-      console.log('A client tried to register an existing username')
+
+  reportExistingUsernameIfExist(user) {
+    if (objectUtilitiesOf(user).isObjectType()) {
+      console.log('Register error: a client tried to register an existing username')
       this.usernameExists = true
     }
   }
-  noError() {
-    return ! (this.emailExists || this.usernameExists)
-  }
+  
   obtainErrorMessage() {
     var errorMessage = ''
     if (this.emailExists) {

@@ -1,11 +1,11 @@
 module.exports = function(object) {
   return {
-    doesExist
+    isObjectType
   }
 
-  function doesExist() {
+  function isObjectType() {
     if (object) { // check: undefined + null
-      if (object.constructor === Object) { // if ((typeof object) === "object")
+      if (object.constructor === Object) { // (typeof object) === "object"
         return true
       }
     }

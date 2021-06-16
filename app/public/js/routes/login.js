@@ -16,10 +16,10 @@ const Login = {
           <p v-html="errorMessage"></p>
           <br/>
           <label for="username"> Username </label>
-          <input id="username" v-model="username" type="text" placeholder="Username" />
+          <input id="username" v-model="username" type="text" placeholder="Enter Username" />
           <br/>
           <label for="password"> Password </label>
-          <input id="password" v-model="password" type="password" placeholder="Password" />
+          <input id="password" v-model="password" type="password" placeholder="Enter Password" />
           <br/>
           <button v-on:click="login"> LOG IN </button>
         </form>
@@ -39,22 +39,27 @@ const Login = {
     login: function(event) {
       event.preventDefault()
       this.errorMessage = gatherErrorMessagesIn(this.username, this.password)
-      if (noErrorIn(this.errorMessage)) {
+      if (this.errorMessage === '') {
         const credential = {
           username: this.username,
           password: this.password
         }
         axios.post("https://localhost:3000/login", credential)
           .then(response => {
-            // response === status 200
-            console.log(response.data)
-            const loginMessage = 'Log in successful!'
-            const dataObject = {message: loginMessage}
-            RoutingUtilities(this).addParameters(dataObject).backToPreviousRoute()
-			    })
+            if (response.data.success) {
+              const loginMessage = 'Log in successful!'
+              const nextPageParameters = { message: loginMessage }
+              routingUtilitiesOf(this).addParameters(nextPageParameters).backToPreviousRoute()
+			      } else {
+              if (response.data.errorMessage) {
+                this.errorMessage = response.data.errorMessage
+              } else {
+                this.errorMessage = 'Unknow error.'
+              }
+            }
+          })
 			    .catch(error => {
-            // TODO check server errors ??? (status == ...)
-            (console.log(error))
+            this.errorMessage = error
           })
       }
 
@@ -66,13 +71,9 @@ const Login = {
         function applyMissingInputError() {
           if (username === '' || password === '') {
             htmlErrorMessage = 
-                htmlErrorMessage.concat('Please fill in all fields for register. <br/>')
+                htmlErrorMessage.concat('Please fill in all fields for login.')
           }
         }
-      }
-
-      function noErrorIn(errorMessage) {
-        return (errorMessage === '')
       }
     }
   }

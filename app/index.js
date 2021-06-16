@@ -11,9 +11,9 @@ function createGlobalAppRoot() {
 
 function createDBConnection() {
   const mongoose = require('mongoose')
-  const mongooseSettings = { 
-    useNewUrlParser: true, 
-    useFindAndModify: false, 
+  const mongooseSettings = {
+    useNewUrlParser: true,
+    useFindAndModify: false,
     useUnifiedTopology: true
   }
   mongoose.connect('mongodb://localhost/nim_multiplayer', mongooseSettings)
@@ -27,6 +27,7 @@ function createExpressApp() {
   serveFrontEndFiles()
   useJSONRequest()
   enableCORS()
+  initExpressSession()
   createRoutes()
   return app
 
@@ -41,6 +42,44 @@ function createExpressApp() {
   function enableCORS() { // e.g.: enable AJAX request
     const cors = require('cors')
     app.use(cors())
+  }
+  
+  function initExpressSession() {
+    const session = require('express-session')
+    const nimMultiplayerSession = {
+      /* best practice for secret:
+         - the secret should be not easily parsed by a human;
+         - store the secret in an environment variable (it must not be hard-coded);
+         - update periodically the secret, while ensuring the previous secret is in the array. */
+      secret: [
+        'secret_for_sign_cookie_session_id', 
+        'this_secret_and_the_other_are_for_veryfing_the_signature_in_requests'
+      ],
+      name: 'NimMultiplayer',
+      cookie: {
+        // cookies are valid in the root path of the domain and in his sub-paths
+        path: '/',
+        // compliant clients will not allow Javascript to see the cookie in document.cookie
+        httpOnly: true,
+        // HTTPS is mandatory
+        secure: true,
+        // cookies validity: 1 hour
+        maxAge: 60 * 60 * 1000
+      },
+      /* resave: force the session to be saved back to the session store,
+         even if the session was never modified during the request ...
+         ... but this is not necessary because ... */
+      resave: 'false',
+      /* ... rolling: force the session identifier cookie to be set on every response.
+         The expiration is reset to the original maxAge, resetting the expiration countdown.
+         (rolling calls internally the method: 'req.session.touch()') */
+      rolling: true,
+      /* saveUninitialized: forces a session that is "uninitialized" to be saved to the session store.
+         A session is uninitialized when it is new but not modified. 
+         Choosing false is useful for implementing login sessions, reducing server session storage usage. */
+      saveUninitialized: 'false',
+    }
+    app.use(session(nimMultiplayerSession))
   }
 
   function createRoutes() {
@@ -71,7 +110,7 @@ function startHTTPSServer() {
 
   function startServer() {
     const port = 3000
-    httpsServer.listen(port, 
+    httpsServer.listen(port,
         function() {
           console.log('\n HTTPS Node Express server started on port ' + port)
           console.log("\n N.B.: the server will listen on:")
@@ -81,23 +120,4 @@ function startHTTPSServer() {
         }
     )
   }
-}
-
-// TODO: ????
-
-function initExpressSession() {
-  var session = require('express-session')
-  var login_session = {
-    secret: ['secret_for_sign_cookie_session_id', 'this_secret_and_the_other_are_for_veryfing_signature_in_requests'],
-    name: 'secret_name',
-    cookie: {
-      path: '/', // root path of the domain
-      httpOnly: true, // blocks the use of the "document.cookie" object
-      secure: false, // if true, an HTTPS connection is needed
-      maxAge: 60000 // = 1 minute, TODO: test it, then 15-30 minutes ???
-    },
-    resave: 'false', // login sessions don't need to be saved!!!
-    saveUninitialized: 'false' // "uninitialized" means "new but not modified": new login sessions don't need to be saved !!!
-  }
-  app.use(session(login_session))
 }
