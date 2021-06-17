@@ -1,12 +1,15 @@
 const Login = {
   components: {
     'app-header': AppHeader,
+    'go-back-button': GoBackButton
   },
   template:
   `
   <div>
 
     <app-header/>
+
+    <go-back-button/>
 
     <main>
       <section>
@@ -21,7 +24,7 @@ const Login = {
           <label for="password"> Password </label>
           <input id="password" v-model="password" type="password" placeholder="Enter Password" />
           <br/>
-          <button v-on:click="login"> LOG IN </button>
+          <button v-on:click="login" type="submit"> LOG IN </button>
         </form>
       </section>
     </main>

@@ -2,7 +2,7 @@
  * This object is an utility for routing between two pages.
  * 
  * It uses the route parameters to save: the previous route name
- * and some custom data inside an object (inputs entered by the user).
+ * and some custom data inside an object.
  * 
  * The route parameters are not inserted in the route path (URL),
  * in this way the URL is short and clean.

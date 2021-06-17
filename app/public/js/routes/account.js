@@ -1,6 +1,7 @@
 const Account = {
   components: {
-    'app-header': AppHeader
+    'app-header': AppHeader,
+    'go-back-button': GoBackButton
   },
   template:
   `
@@ -8,6 +9,8 @@ const Account = {
 
     <app-header/>
 
+    <go-back-button/>
+    
     <section>
       <button v-on:click="logout"> LOG OUT </button>
       <button v-on:click="deleteAccount"> DELETE ACCOUNT </button>
