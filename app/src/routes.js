@@ -19,5 +19,6 @@ function createUserRoutes(app) {
   const userController = require('./controllers/user')
   app.route('/register').post(userController.register)
   app.route('/login').post(userController.login)
+  app.route('/get-user-logged-in').get(userController.getUserLoggedIn)
   // app.route('/account').post(userController.delete)
 }

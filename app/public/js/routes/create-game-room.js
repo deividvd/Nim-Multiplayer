@@ -1,7 +1,7 @@
 const CreateGameRoom = {
   components: {
     'app-header': AppHeader,
-    'login-section': LoginSection,
+    'user-section': UserSection,
     'how-to-play': HowToPlay
   },
   template:
@@ -10,13 +10,7 @@ const CreateGameRoom = {
 
     <app-header/>
 
-    <section>
-      <p>
-        {{ this.$route.params.message }}
-      </p>
-    </section>
-
-    <login-section/>
+    <user-section/>
 
     <section>
       <form>
@@ -55,12 +49,18 @@ const CreateGameRoom = {
   </div>
   `,
   methods: {
-    register: function() {
-      routingUtilitiesOf(this).addParameters({}).goTo(RegisterRoute)
+    goToAccount: function() {
+      twoPageRoutingFrom(this).addParameters({}).goTo(AccountRoute)
     },
-    login: function() {
-      routingUtilitiesOf(this).addParameters({}).goTo(LoginRoute)
+    goToLogin: function() {
+      twoPageRoutingFrom(this).addParameters({}).goTo(LoginRoute)
     },
+    goToRegister: function() {
+      twoPageRoutingFrom(this).addParameters({}).goTo(RegisterRoute)
+    },
+
+
+    
     createGameRoom: function(event) {
       event.preventDefault()
     }

@@ -50,6 +50,9 @@ const Register = {
       passwordRequiredLenght: 8
     }
   },
+  mounted() {
+    sessionRouting().goHomeIfUserIsLoggedIn()
+  },
   methods: {
     register: function(event) {
       event.preventDefault()
@@ -65,8 +68,8 @@ const Register = {
           .then(response => {
             if (response.data.success) {
               const registrationMessage = 'Congratulations, your account has been successfully created!'
-              const nextPageParameters = { message: registrationMessage }
-              routingUtilitiesOf(this).addParameters(nextPageParameters).backToPreviousRoute()
+              const nextPageParameters = { registrationMessage: registrationMessage }
+              twoPageRoutingFrom(this).addParameters(nextPageParameters).backToPreviousRoute()
             } else {
               if (response.data.errorMessage) {
                 this.errorMessage = response.data.errorMessage

@@ -1,7 +1,7 @@
 const Home = {
   components: {
     'app-header': AppHeader,
-    'login-section': LoginSection,
+    'user-section': UserSection,
     'how-to-play': HowToPlay
   },
   template:
@@ -10,11 +10,7 @@ const Home = {
 
     <app-header/>
 
-    <section>
-      <p>
-        {{ this.$route.params.message }}
-      </p>
-    </section>
+    <user-section/>
 
     <main>
       <section>
@@ -23,8 +19,6 @@ const Home = {
         </router-link>
       </section>
     </main>
-
-    <login-section/>
 
     <how-to-play/>
 
@@ -41,11 +35,14 @@ const Home = {
   </div>
   `,
   methods: {
-    register: function() {
-      routingUtilitiesOf(this).addParameters({}).goTo(RegisterRoute)
+    goToAccount: function() {
+      twoPageRoutingFrom(this).addParameters({}).goTo(AccountRoute)
     },
-    login: function() {
-      routingUtilitiesOf(this).addParameters({}).goTo(LoginRoute)
+    goToLogin: function() {
+      twoPageRoutingFrom(this).addParameters({}).goTo(LoginRoute)
+    },
+    goToRegister: function() {
+      twoPageRoutingFrom(this).addParameters({}).goTo(RegisterRoute)
     }
   }
 }

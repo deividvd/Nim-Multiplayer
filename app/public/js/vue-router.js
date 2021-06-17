@@ -6,7 +6,7 @@ const router = new VueRouter({
       { path: '/terms-of-service', component: TermsOfService },
       RegisterRoute,
       LoginRoute,
-      { path: '/account', component: Account },
+      AccountRoute,
       CreateGameRoomRoute,
       // { path: '/game-room/:id', /*, name: GameRoom*/ component: CreateGameRoom },
       { path: '/404', component: NotFoundError },

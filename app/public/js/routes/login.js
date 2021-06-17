@@ -35,6 +35,9 @@ const Login = {
       password: ''
     }
   },
+  mounted() {
+    sessionRouting().goHomeIfUserIsLoggedIn()
+  },
   methods: {
     login: function(event) {
       event.preventDefault()
@@ -47,9 +50,7 @@ const Login = {
         axios.post("https://localhost:3000/login", credential)
           .then(response => {
             if (response.data.success) {
-              const loginMessage = 'Log in successful!'
-              const nextPageParameters = { message: loginMessage }
-              routingUtilitiesOf(this).addParameters(nextPageParameters).backToPreviousRoute()
+              twoPageRoutingFrom(this).addParameters({}).backToPreviousRoute()
 			      } else {
               if (response.data.errorMessage) {
                 this.errorMessage = response.data.errorMessage

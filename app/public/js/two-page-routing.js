@@ -11,7 +11,7 @@
  * if the user reload the (route) page, the parameters are lost,
  * then this object will route to Home instead of the previous page.
  */
-function routingUtilitiesOf(vueComponent) {
+function twoPageRoutingFrom(vueComponent) {
   return {
     addParameters: function(customData) {
       return {
@@ -20,7 +20,6 @@ function routingUtilitiesOf(vueComponent) {
       }
 
       function goTo(destinationRoute) {
-        const router = vueComponent.$parent.$router
         router.push({
           name: destinationRoute.name,
           params: {
@@ -45,7 +44,6 @@ function routingUtilitiesOf(vueComponent) {
         }
 
         function backTo(previousRouteName) {
-          const router = vueComponent.$parent.$router
           router.push({
             name: previousRouteName,
             params: customData

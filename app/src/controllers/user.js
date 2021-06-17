@@ -76,7 +76,7 @@ exports.login = function(req, res) {
   const credentials = req.body
   const username = credentials.username
   usersCollection.findUserByUsername(username)
-    .then((user) => {ù
+    .then((user) => {
       if (user) {
         verifyPasswordInsertedWith(user)
           .then((match) => {
@@ -107,4 +107,20 @@ exports.login = function(req, res) {
   function sendWrongCredentialResponse() {
     res.send({ errorMessage: 'Incorrect username or password.' })
   }
+}
+
+exports.getUserLoggedIn = function(req, res) {
+  if (req.session.username) {
+    res.send({ username: req.session.username })
+  } else {
+    res.send({ username: null })
+  }
+}
+
+exports.logout = function(req, res) {
+
+}
+
+exports.deleteAccount = function(req, res) {
+
 }
