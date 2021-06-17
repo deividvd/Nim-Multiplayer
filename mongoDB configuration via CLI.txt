@@ -1,0 +1,8 @@
+use nim_multiplayer
+
+db.users.insert( {_id: "username", email: "username@mail", password: "password"} )
+
+db.users.remove( {_id: "username"} )
+
+db.users.createIndex( { "email": 1 }, { unique: true } )
+
