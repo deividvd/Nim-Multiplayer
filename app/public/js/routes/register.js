@@ -68,7 +68,7 @@ const Register = {
           password: this.password
         }
         axios.post("https://localhost:3000/register", credential)
-          .then(response => {
+          .then((response) => {
             if (response.data.success) {
               const registrationMessage = 'Congratulations, your account has been successfully created!'
               const nextPageParameters = { registrationMessage: registrationMessage }

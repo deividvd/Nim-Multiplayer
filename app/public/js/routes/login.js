@@ -51,7 +51,7 @@ const Login = {
           password: this.password
         }
         axios.post("https://localhost:3000/login", credential)
-          .then(response => {
+          .then((response) => {
             if (response.data.success) {
               twoPageRoutingFrom(this).addParameters({}).backToPreviousRoute()
 			      } else {

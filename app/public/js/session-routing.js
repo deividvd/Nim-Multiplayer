@@ -6,7 +6,7 @@ function sessionRouting() {
 
   function goHomeIfUserIsLoggedIn() {
     axios.get("https://localhost:3000/get-user-logged-in")
-      .then(response => {
+      .then((response) => {
         if (response.data.username) {
           router.push({ name: HomeRoute.name })
         }
@@ -15,7 +15,7 @@ function sessionRouting() {
 
   function goHomeIfUserIsLoggedOut() {
     axios.get("https://localhost:3000/get-user-logged-in")
-      .then(response => {
+      .then((response) => {
         if (! response.data.username) {
           router.push({ name: HomeRoute.name })
         }

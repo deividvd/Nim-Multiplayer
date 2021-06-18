@@ -101,7 +101,7 @@ exports.login = function(req, res) {
 
   function login() {
     req.session.username = username
-    res.status(200).send(newSuccess())
+    res.send(newSuccess())
   }
 
   function sendWrongCredentialResponse() {
@@ -118,7 +118,10 @@ exports.getUserLoggedIn = function(req, res) {
 }
 
 exports.logout = function(req, res) {
-
+  if (req.session.username) {
+    delete req.session.username
+    res.send(newSuccess())
+  }
 }
 
 exports.deleteAccount = function(req, res) {

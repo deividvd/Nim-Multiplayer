@@ -24,7 +24,13 @@ const Account = {
   },
   methods: {
     logout: function() {
-      console.log("logout");
+      axios.get("https://localhost:3000/logout")
+        .then((response) => {
+          twoPageRoutingFrom(this).addParameters({}).backToPreviousRoute()
+        })
+        .catch((error) => {
+          twoPageRoutingFrom(this).addParameters({}).backToPreviousRoute()
+        })
     },
     deleteAccount: function() {
       console.log("delete account");
