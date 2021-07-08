@@ -52,19 +52,13 @@ const Login = {
         }
         axios.post("https://localhost:3000/login", credential)
           .then((response) => {
-            if (response.data.success) {
-              twoPageRoutingFrom(this).addParameters({}).backToPreviousRoute()
-			      } else {
-              if (response.data.errorMessage) {
-                this.errorMessage = response.data.errorMessage
-              } else {
-                this.errorMessage = 'Unknow error.'
-              }
+            responseResolverOf(this).addSuccessBehavior(successOf).resolve(response)
+
+            function successOf(vueComponent) {
+              twoPageRoutingFrom(vueComponent).addParameters({}).backToPrevious()
             }
           })
-			    .catch(error => {
-            this.errorMessage = error
-          })
+			    .catch((error) => { this.errorMessage = error })
       }
 
       function gatherErrorMessagesIn(username, password) {

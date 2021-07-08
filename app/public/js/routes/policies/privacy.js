@@ -1,12 +1,15 @@
 const Privacy = {
   components: {
-    'app-header': AppHeader
+    'app-header': AppHeader,
+    'go-back-button': GoBackButton
   },
   template:
   `
   <div>
 
     <app-header/>
+
+    <go-back-button/>
 
     <main>
       <section>

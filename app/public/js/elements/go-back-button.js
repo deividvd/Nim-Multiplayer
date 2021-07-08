@@ -5,7 +5,7 @@ const GoBackButton = {
   `,
   methods: {
     goBack: function() {
-      twoPageRoutingFrom(this).addParameters({}).backToPreviousRoute()
+      twoPageRoutingFrom(this).addParameters({}).backToPrevious()
     }
   }
 }

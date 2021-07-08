@@ -69,21 +69,15 @@ const Register = {
         }
         axios.post("https://localhost:3000/register", credential)
           .then((response) => {
-            if (response.data.success) {
+            responseResolverOf(this).addSuccessBehavior(successOf).resolve(response)
+
+            function successOf(vueComponent) {
               const registrationMessage = 'Congratulations, your account has been successfully created!'
-              const nextPageParameters = { registrationMessage: registrationMessage }
-              twoPageRoutingFrom(this).addParameters(nextPageParameters).backToPreviousRoute()
-            } else {
-              if (response.data.errorMessage) {
-                this.errorMessage = response.data.errorMessage
-              } else {
-                this.errorMessage = 'Unknow error.'
-              }
+              const nextPageParameters = { message: registrationMessage }
+              twoPageRoutingFrom(vueComponent).addParameters(nextPageParameters).backToPrevious()
             }
           })
-          .catch(error => {
-            this.errorMessage = error
-          })
+          .catch((error) => { this.errorMessage = error })
       }
 
       function gatherErrorMessagesIn(username, email, password, confirmPassword, passwordRequiredLenght) {

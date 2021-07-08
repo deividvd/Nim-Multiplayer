@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 const UserModel = require('./models/user')
 const User = UserModel(mongoose)
 
-
 exports.findUserByEmail = function(email) {
   return User.findOne({ email: email }).lean()
 }
@@ -18,4 +17,8 @@ exports.insertNewUser = function(username, email, password) {
     password: password
   })
   return newUser.save()
+}
+
+exports.deleteUserByUsername = function(username) {
+  return User.deleteOne({ _id: username })
 }

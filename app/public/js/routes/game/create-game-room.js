@@ -1,6 +1,7 @@
 const CreateGameRoom = {
   components: {
     'app-header': AppHeader,
+    'go-back-button': GoBackButton,
     'user-section': UserSection,
     'how-to-play': HowToPlay
   },
@@ -9,6 +10,8 @@ const CreateGameRoom = {
   <div>
 
     <app-header/>
+
+    <go-back-button/>
 
     <user-section/>
 

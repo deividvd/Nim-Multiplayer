@@ -16,7 +16,7 @@ function twoPageRoutingFrom(vueComponent) {
     addParameters: function(customData) {
       return {
         goTo,
-        backToPreviousRoute
+        backToPrevious
       }
 
       function goTo(destinationRoute) {
@@ -29,7 +29,7 @@ function twoPageRoutingFrom(vueComponent) {
         })
       }
 
-      function backToPreviousRoute() {
+      function backToPrevious() {
         const previousRouteName = vueComponent.$route.params.previousRouteName
         if (stringUtilitiesOf(previousRouteName).isStringType()) {
           switch (previousRouteName) {

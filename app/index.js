@@ -1,7 +1,7 @@
 createGlobalAppRoot()
 createDBConnection()
 const app = createExpressApp()
-startHTTPSServer()
+startServer(app)
 
 
 function createGlobalAppRoot() {
@@ -46,10 +46,10 @@ function createExpressApp() {
   
   function initExpressSession() {
     const session = require('express-session')
-    const nimMultiplayerSession = {
+    const nimMultiplayerSessionSettings = {
       /* best practice for secret:
          - the secret should be not easily parsed by a human;
-         - store the secret in an environment variable (it must not be hard-coded);
+         - store the secret in an system environment variable (it must not be hard-coded);
          - update periodically the secret, while ensuring the previous secret is in the array. */
       secret: [
         'secret_for_sign_cookie_session_id', 
@@ -67,19 +67,19 @@ function createExpressApp() {
         maxAge: 60 * 60 * 1000
       },
       /* resave: force the session to be saved back to the session store,
-         even if the session was never modified during the request ...
-         ... but this is not necessary because ... */
+         even if the session was never modified during the request.
+         This parameter is set to false, it is not necessary, due to ... */
       resave: 'false',
       /* ... rolling: force the session identifier cookie to be set on every response.
          The expiration is reset to the original maxAge, resetting the expiration countdown.
          (rolling calls internally the method: 'req.session.touch()') */
       rolling: true,
       /* saveUninitialized: forces a session that is "uninitialized" to be saved to the session store.
-         A session is uninitialized when it is new but not modified. 
+         A session is "uninitialized" when it is new but not modified. 
          Choosing false is useful for implementing login sessions, reducing server session storage usage. */
       saveUninitialized: 'false',
     }
-    app.use(session(nimMultiplayerSession))
+    app.use(session(nimMultiplayerSessionSettings))
   }
 
   function createRoutes() {
@@ -88,10 +88,10 @@ function createExpressApp() {
   }
 }
 
-function startHTTPSServer() {
+function startServer(app) {
   const httpsCredentials = createHTTPSCredential()
   const httpsServer = createHTTPSServer()
-  startServer()
+  startHTTPSServer()
 
   function createHTTPSCredential() {
     const fs = require('fs')
@@ -108,7 +108,7 @@ function startHTTPSServer() {
     return https.createServer(httpsCredentials, app)
   }
 
-  function startServer() {
+  function startHTTPSServer() {
     const port = 3000
     httpsServer.listen(port,
         function() {

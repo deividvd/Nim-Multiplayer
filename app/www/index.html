@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Nim Multiplayer</title>
+  <title> Nim Multiplayer </title>
 </head>
 
 <body>
@@ -13,32 +13,43 @@
     <router-view/>
   </div>
 
+  <!-- axios library -->
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <!-- Javascript utilities -->
+  <script src="/static/js/utilities/string.js"></script>
+  <!-- <script src="/static/js/object-utilities.js"></script> -->
+
   <!-- vue components that represent an HTML element -->
   <script src="/static/js/elements/app-header.js"></script>
   <script src="/static/js/elements/go-back-button.js"></script>
   <script src="/static/js/elements/user-section.js"></script>
   <script src="/static/js/elements/how-to-play.js"></script>
+
+  <!-- routing utilities -->
+  <script src="/static/js/routes/utilities/two-page-routing.js"></script>
+  <script src="/static/js/routes/utilities/response-resolver.js"></script>
+  <script src="/static/js/routes/utilities/session-routing.js"></script>
+
   <!-- vue components used by the router: each one represents a route -->
-  <script src="/static/js/routes/home.js"></script>
-  <script src="/static/js/routes/register.js"></script>
-  <script src="/static/js/routes/login.js"></script>
-  <script src="/static/js/routes/account.js"></script>
-  <script src="/static/js/routes/privacy.js"></script>
-  <script src="/static/js/routes/terms-of-service.js"></script>
   <script src="/static/js/routes/404.js"></script>
-  <script src="/static/js/routes/create-game-room.js"></script>
+  <script src="/static/js/routes/home.js"></script>
+  <script src="/static/js/routes/game/create-game-room.js"></script>
+        <!-- user data routes -->
+  <script src="/static/js/routes/user/register.js"></script>
+  <script src="/static/js/routes/user/login.js"></script>
+  <script src="/static/js/routes/user/account.js"></script>
+        <!-- policy routes -->
+  <script src="/static/js/routes/policies/privacy.js"></script>
+  <script src="/static/js/routes/policies/terms-of-service.js"></script>
+
   <!-- vue libraries -->
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   <script src="https://npmcdn.com/vue-router/dist/vue-router.js"></script>
-  <!-- router -->
+
+  <!-- application's router -->
   <script src="/static/js/shared-routes.js"></script>
   <script src="/static/js/vue-router.js"></script>
-  <!-- utilities used in some components -->
-  <!-- <script src="/static/js/object-utilities.js"></script> -->
-  <script src="/static/js/utilities/string.js"></script>
-  <script src="/static/js/two-page-routing.js"></script>
-  <script src="/static/js/session-routing.js"></script>
 
   <script>
     const app = new Vue({

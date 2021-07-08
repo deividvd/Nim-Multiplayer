@@ -23,10 +23,10 @@ class RegisterErrors {
   obtainErrorMessage() {
     var errorMessage = ''
     if (this.emailExists) {
-      errorMessage = 'The email is already registered. <br/>'
+      errorMessage = 'The email is already registered.'
     }
     if (this.usernameExists) {
-      errorMessage = errorMessage.concat('The username is already taken.')
+      errorMessage = errorMessage.concat(' <br/> The username is already taken.')
     }
     return errorMessage
   }

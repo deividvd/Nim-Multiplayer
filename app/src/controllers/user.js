@@ -1,29 +1,32 @@
 const usersCollection = require('../db_access/user')
 const RegisterErrors = require('../services/user/registerErrors')
 const passwordEncryption = require('../services/user/passwordEncryption')
+const responseSender = require('../services/responseSender')
+const objectUtilitiesOf = require('../utilities/object')
+const stringUtilitiesOf = require('../utilities/string')
 
 exports.register = function(req, res) {
   const credentials = req.body
   const email = credentials.email
   const username = credentials.username
-  findEmailAndUsername()
+  findEmailAndUsernameInDB()
     .then((results) => {
-      const errorMessage = obtainErrorMessageFrom(results[0], results[1])
-      if (errorMessage === '') {
+      const exceptionMessage = obtainExceptionMessageFrom(results[0], results[1])
+      if (exceptionMessage === '') {
         insertNewUserIntoDB()
       } else {
-        res.send({ errorMessage: errorMessage })
+        responseSender.exception(res).sendMessage(exceptionMessage)
       }
     })
-    .catch((dbError) => { sendErrorIn(res).databaseError(dbError) })
+    .catch((dbError) => { responseSender.error(res).sendDatabaseError(dbError) })
 
-  function findEmailAndUsername() {
+  function findEmailAndUsernameInDB() {
     const findUserByEmail = usersCollection.findUserByEmail(email)
     const findUserByUsername = usersCollection.findUserByUsername(username)
     return Promise.all([findUserByEmail, findUserByUsername])
   }
 
-  function obtainErrorMessageFrom(userHavingTheEmailInserted, userHavingTheUsernameInserted) {
+  function obtainExceptionMessageFrom(userHavingTheEmailInserted, userHavingTheUsernameInserted) {
     const errorReport = new RegisterErrors()
     errorReport.reportExistingEmailIfExist(userHavingTheEmailInserted)
     errorReport.reportExistingUsernameIfExist(userHavingTheUsernameInserted)
@@ -35,95 +38,86 @@ exports.register = function(req, res) {
     passwordEncryption.encrypt(password)
       .then((hashedPassword) => {
         usersCollection.insertNewUser(username, email, hashedPassword)
-          .then((userInserted) => { res.status(201).send(newSuccess()) })
-          .catch((dbError) => { sendErrorIn(res).databaseError(dbError) })
+          .then((userInserted) => { responseSender.success(res).sendStatus(201) })
+          .catch((dbError) => { responseSender.error(res).sendDatabaseError(dbError) })
       })
-      .catch((encryptError) => { sendErrorIn(res).encryptError(encryptError) })
+      .catch((encryptError) => { responseSender.error(res).sendEncryptError(encryptError) })
   }
 }
 
-function sendErrorIn(res) {
-  return {
-    databaseError,
-    encryptError,
-    decryptError
-  }
-
-  function databaseError(dbError) {
-    console.log('Database error:')
-    console.log(dbError)
-    res.status(500).send({ errorMessage: 'Internal Server Error 1' })
-  }
-
-  function encryptError(encryptError) {
-    console.log('Encryption error:')
-    console.log(encryptError)
-    res.status(500).send({ errorMessage: 'Internal Server Error 2' })
-  }
-
-  function decryptError(decryptError) {
-    console.log('Decryption error:')
-    console.log(decryptError)
-    res.status(500).send({ errorMessage: 'Internal Server Error 3' })
-  }
-}
-
-function newSuccess() {
-  return { success: 'success' }
-}
-
-exports.login = function(req, res) {
+exports.logIn = function(req, res) {
   const credentials = req.body
   const username = credentials.username
   usersCollection.findUserByUsername(username)
     .then((user) => {
-      if (user) {
-        verifyPasswordInsertedWith(user)
-          .then((match) => {
-            if (match) {
-              login()
+      if (objectUtilitiesOf(user).isObjectType()) {
+        comparePasswordInsertedWith(user)
+          .then((passwordsMatch) => {
+            if (passwordsMatch) {
+              logIn()
             } else {
               sendWrongCredentialResponse()
             }
           })
-          .catch((decryptError) => { sendErrorIn(res).decryptError(decryptError) })
+          .catch((decryptError) => { responseSender.error(res).sendDecryptError(decryptError) })
       } else {
         sendWrongCredentialResponse()
       }
     })
-    .catch((dbError) => { sendErrorIn(res).databaseError(dbError) })
+    .catch((dbError) => { responseSender.error(res).sendDatabaseError(dbError) })
 
-  function verifyPasswordInsertedWith(registeredUser) {
+  function comparePasswordInsertedWith(registeredUser) {
     const password = credentials.password
     const encryptedPassword = registeredUser.password
     return passwordEncryption.compare(password, encryptedPassword)
   }
 
-  function login() {
+  function logIn() {
     req.session.username = username
-    res.send(newSuccess())
+    responseSender.success(res).sendStatus(200)
   }
 
   function sendWrongCredentialResponse() {
-    res.send({ errorMessage: 'Incorrect username or password.' })
+    responseSender.exception(res).sendMessage('Incorrect username or password.')
   }
 }
 
 exports.getUserLoggedIn = function(req, res) {
-  if (req.session.username) {
-    res.send({ username: req.session.username })
+  const usernameLoggedIn = req.session.username
+  if (stringUtilitiesOf(usernameLoggedIn).isStringType()) {
+    res.send({ username: usernameLoggedIn })
   } else {
     res.send({ username: null })
   }
 }
 
-exports.logout = function(req, res) {
+exports.logOut = function(req, res) {
   if (req.session.username) {
-    delete req.session.username
-    res.send(newSuccess())
+    logOut(req, res)
+  } else {
+    responseSender.exception(res).sendMessage('User is not logged in.')
   }
 }
 
-exports.deleteAccount = function(req, res) {
+function logOut(req, res) {
+  delete req.session.username
+  responseSender.success(res).sendStatus(200)
+}
 
+exports.deleteAccount = function(req, res) {
+  const usernameLoggedIn = req.session.username
+  if (stringUtilitiesOf(usernameLoggedIn).isStringType()) {
+    usersCollection.deleteUserByUsername(usernameLoggedIn)
+      .then((deletion) => { // deletion = { n: 1, ok: 1, deletedCount: 1 }
+        console.log(deletion);
+        if (deletion.deletedCount === 1) {
+          logOut(req, res)
+        } else {
+          responseSender.exception(res).sendMessage('Account not found. Please log out or clear your cookies, then try again.')
+        }
+      })
+      .catch((dbError) => { responseSender.error(res).sendDatabaseError(dbError) })
+  } else {
+    responseSender.error(res).sendMalformedRequestError()
+  }
 }
