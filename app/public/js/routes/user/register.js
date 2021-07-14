@@ -13,30 +13,30 @@ const Register = {
 
     <main>
       <section>
-        <h2> CREATE YOUR ACCOUNT </h2>
+        <h2> Create your Account </h2>
 
         <form>
           <p v-html="errorMessage"></p>
-          <br/>
+
           <label for="username"> Username </label>
           <input id="username" v-model="username" type="text" placeholder="Enter Username" />
-          <br/>
+          
           <label for="email"> Email </label>
           <input id="email" v-model="email" type="email" placeholder="Enter Email" />
-          <br/>
+          
           <label for="password"> Password </label>
           <input id="password" v-model="password" type="password" placeholder="Enter Password" />
-          <br/>
+          
           <label for="confirm-password"> Confirm Password </label>
           <input id="confirm-password" v-model="confirmPassword" type="password" placeholder="Repeat Password" />
-          <br/>
+          
           <p>
             The password must have: 
             {{ passwordRequiredLenght }} characters,
             including a number, a lowercase and an uppercase letter.
           </p>
-          <br/>
-          <button v-on:click="register"> CREATE ACCOUNT </button>
+          
+          <button v-on:click="register"> Sign up </button>
         </form>
       </section>
     </main>
@@ -54,7 +54,7 @@ const Register = {
     }
   },
   mounted() {
-    sessionRouting().goHomeIfUserIsLoggedIn()
+    sessionUtilities().goHomeIfUserIsLoggedIn()
   },
   methods: {
     register: function(event) {

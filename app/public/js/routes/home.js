@@ -15,7 +15,7 @@ const Home = {
     <main>
       <section>
         <router-link to="/create-game-room">
-          <button type="button"> CREATE GAME ROOM </button>
+          <button type="button"> Create Game Room </button>
         </router-link>
       </section>
     </main>

@@ -2,32 +2,24 @@ const UserSection = {
   template:
   `
   <section>
-    <div v-if="userLoggedIn">
-      <p> Welcome, {{ username }} </p>
-      <button v-on:click="goToAccount" type="button"> MANAGE ACCOUNT </button>
+    <div v-if="username">
+      <p> Logged as: {{ username }} </p>
+      <button v-on:click="goToAccount" type="button"> Manage Account </button>
     </div>
     <div v-else>
       <div> {{ this.$route.params.message }} </div>
-      <button v-on:click="goToLogin" type="button"> LOG IN </button>
-      <button v-on:click="goToRegister" type="button"> REGISTER </button>
+      <button v-on:click="goToLogin" type="button"> Login </button>
+      <button v-on:click="goToRegister" type="button"> Register </button>
     </div>
   </section>
   `,
   data() {
     return {
-      userLoggedIn: false,
-      username: ''
+      username: null
     }
   },
   mounted() {
-    axios.get("https://localhost:3000/get-user-logged-in")
-      .then(response => {
-        const usernameLoggedIn = response.data.username
-        if (usernameLoggedIn) {
-          this.username = usernameLoggedIn
-          this.userLoggedIn = true
-        }
-      })
+    sessionUtilities().setUsernameOf(this)
   },
   methods: {
     goToAccount: function() {

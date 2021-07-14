@@ -16,6 +16,8 @@ const CreateGameRoom = {
     <user-section/>
 
     <section>
+      <h2> Create your Game Room </h2>
+
       <form>
         <label for="players"> Numero di Giocatori: </label>
         <select id="players">
@@ -25,15 +27,13 @@ const CreateGameRoom = {
           <option value="5"> 5 </option>
           <option value="6"> 6 </option>
         </select>
-        <br/>
-        <label> Vittoria: </label>
-        <br/>
-        <input id="standard" name="victory" type="radio" value="standard" checked="checked" />
-        <label for="standard"> Standard </label>
-        <br/>
-        <input id="marienbad" name="victory" type="radio" value="marienbad" />
-        <label for="marienbad"> Marienbad </label>
-        <br/>
+
+        <label for="victory"> Vittoria: </label>
+        <select id="victory">
+          <option value="2"> Standard </option>
+          <option value="3"> Marienbad </option>
+        </select>
+
         <label for="players"> Numero di Righe </label>
         <select id="players">
           <option value="2"> 2 </option>
@@ -42,6 +42,7 @@ const CreateGameRoom = {
           <option value="5"> 5 </option>
           <option value="6"> 6 </option>
         </select>
+        
         <br/>
         <button v-on:click="createGameRoom"> CREATE GAME ROOM </button>
       </form>

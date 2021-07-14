@@ -13,13 +13,15 @@ const Account = {
     
     <section>
       <p v-html="errorMessage"></p>
+
+      <p> Logged as: {{ username }} </p>
+
+      <button v-on:click="logout"> Sign out </button>
+      
+      <button id="delete-account" v-on:click="deleteAccount"> Delete your Account </button>
       <br/>
-      <button v-on:click="logout"> LOG OUT </button>
-      <button v-on:click="deleteAccount"> DELETE YOUR ACCOUNT </button>
       <form v-if="showPermanentlyDelete">
-        <label> ARE YOU SURE? D: </label>
-        <br/>
-        <button v-on:click="permanentlyDeleteAccount" type="submit"> PERMANENTLY DELETE YOUR ACCOUNT </button>
+        <button id="permanently-delete-account" v-on:click="permanentlyDeleteAccount" type="submit"> ARE YOU SURE? <br/> Click here to <br/> PERMANENTLY DELETE <br/> your account. </button>
       </form>
     </section>
 
@@ -27,18 +29,18 @@ const Account = {
   `,
   data() {
     return {
+      username: null,
       errorMessage: '',
       showPermanentlyDelete: false
     }
   },
   mounted() {
-    sessionRouting().goHomeIfUserIsLoggedOut()
+    sessionUtilities().goHomeIfUserIsLoggedOutAndSetUsernameOf(this)
   },
   methods: {
     logout: function() {
       axios.post("https://localhost:3000/logout")
         .then((response) => {
-          console.log(response);
           responseResolverOf(this).addSuccessBehavior(successOf).resolve(response)
 
           function successOf(vueComponent) {

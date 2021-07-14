@@ -1,7 +1,9 @@
 const GoBackButton = {
   template:
   `
-  <button v-on:click="goBack" type="button"> GO BACK </button>
+  <button id="go-back-button" v-on:click="goBack" type="button">
+    <img src="/static/img/go-back.png" alt="go back button" />
+  </button>
   `,
   methods: {
     goBack: function() {

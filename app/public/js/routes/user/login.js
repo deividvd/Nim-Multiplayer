@@ -13,18 +13,19 @@ const Login = {
 
     <main>
       <section>
-        <h2> LOG IN </h2>
+        <h2> Login </h2>
 
         <form>
           <p v-html="errorMessage"></p>
-          <br/>
+          
           <label for="username"> Username </label>
           <input id="username" v-model="username" type="text" placeholder="Enter Username" />
-          <br/>
+          
           <label for="password"> Password </label>
           <input id="password" v-model="password" type="password" placeholder="Enter Password" />
+          
           <br/>
-          <button v-on:click="login" type="submit"> LOG IN </button>
+          <button v-on:click="login" type="submit"> Sign in </button>
         </form>
       </section>
     </main>
@@ -39,7 +40,7 @@ const Login = {
     }
   },
   mounted() {
-    sessionRouting().goHomeIfUserIsLoggedIn()
+    sessionUtilities().goHomeIfUserIsLoggedIn()
   },
   methods: {
     login: function(event) {

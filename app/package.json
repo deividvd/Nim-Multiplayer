@@ -18,9 +18,11 @@
   "homepage": "https://github.com/deividvd/Nim-Multiplayer#readme",
   "dependencies": {
     "bcrypt": "^5.0.1",
+    "bootstrap": "^5.0.2",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
-    "mongoose": "^5.12.8"
+    "mongoose": "^5.12.8",
+    "sass": "^1.35.2"
   }
 }
