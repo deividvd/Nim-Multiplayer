@@ -1,13 +1,8 @@
-createGlobalAppRoot()
 createDBConnection()
+createGlobalAppRoot()
 const app = createExpressApp()
 startServer(app)
 
-
-function createGlobalAppRoot() {
-  const path = require('path')
-  global.appRoot = path.resolve(__dirname)
-}
 
 function createDBConnection() {
   const mongoose = require('mongoose')
@@ -21,13 +16,18 @@ function createDBConnection() {
     .catch((error) => { console.log('\n MongoDB Connection Error: ' + error) })
 }
 
+function createGlobalAppRoot() {
+  const path = require('path')
+  global.appRoot = path.resolve(__dirname)
+}
+
 function createExpressApp() {
   const express = require('express')
   const app = express()
   serveFrontEndFiles()
   useJSONRequest()
   enableCORS()
-  initExpressSession()
+  createExpressSession()
   createRoutes()
   return app
 
@@ -44,7 +44,7 @@ function createExpressApp() {
     app.use(cors())
   }
   
-  function initExpressSession() {
+  function createExpressSession() {
     const session = require('express-session')
     const nimMultiplayerSessionSettings = {
       /* best practice for secret:
