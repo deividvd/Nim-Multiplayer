@@ -1,35 +1,35 @@
 const objectUtilitiesOf = require('../../utilities/object')
 
-class RegisterErrors {
+class RegistrationExceptions {
   constructor() {
     this.emailExists = false
     this.usernameExists = false
   }
 
-  reportExistingEmailIfExist(user) {
+  addExistingEmailIfExist(user) {
     if (objectUtilitiesOf(user).isObjectType()) {
       console.log('Register error: a client tried to register an existing email')
       this.emailExists = true
     }
   }
 
-  reportExistingUsernameIfExist(user) {
+  addExistingUsernameIfExist(user) {
     if (objectUtilitiesOf(user).isObjectType()) {
       console.log('Register error: a client tried to register an existing username')
       this.usernameExists = true
     }
   }
   
-  obtainErrorMessage() {
-    var errorMessage = ''
+  obtainExceptionMessage() {
+    var exceptionMessage = ''
     if (this.emailExists) {
-      errorMessage = 'The email is already registered.'
+      exceptionMessage = 'The email is already registered.'
     }
     if (this.usernameExists) {
-      errorMessage = errorMessage.concat(' <br/> The username is already taken.')
+      exceptionMessage = exceptionMessage.concat(' <br/> The username is already taken.')
     }
-    return errorMessage
+    return exceptionMessage
   }
 }
 
-module.exports = RegisterErrors
+module.exports = RegistrationExceptions

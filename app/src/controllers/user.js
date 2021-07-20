@@ -1,11 +1,12 @@
+const ResponseSender = require('../services/ResponseSender')
 const usersCollection = require('../db_access/user')
-const RegisterErrors = require('../services/user/registerErrors')
+const RegistrationExceptions = require('../services/user/RegistrationExceptions')
 const passwordEncryption = require('../services/user/passwordEncryption')
-const responseSender = require('../services/responseSender')
 const objectUtilitiesOf = require('../utilities/object')
 const stringUtilitiesOf = require('../utilities/string')
 
 exports.register = function(req, res) {
+  const responseSender = new ResponseSender(res)
   const credentials = req.body
   const email = credentials.email
   const username = credentials.username
@@ -15,10 +16,10 @@ exports.register = function(req, res) {
       if (exceptionMessage === '') {
         insertNewUserIntoDB()
       } else {
-        responseSender.exception(res).sendMessage(exceptionMessage)
+        responseSender.sendExceptionMessage(exceptionMessage)
       }
     })
-    .catch((dbError) => { responseSender.error(res).sendDatabaseError(dbError) })
+    .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
 
   function findEmailAndUsernameInDB() {
     const findUserByEmail = usersCollection.findUserByEmail(email)
@@ -27,10 +28,10 @@ exports.register = function(req, res) {
   }
 
   function obtainExceptionMessageFrom(userHavingTheEmailInserted, userHavingTheUsernameInserted) {
-    const errorReport = new RegisterErrors()
-    errorReport.reportExistingEmailIfExist(userHavingTheEmailInserted)
-    errorReport.reportExistingUsernameIfExist(userHavingTheUsernameInserted)
-    return errorReport.obtainErrorMessage()
+    const registrationExceptions = new RegistrationExceptions()
+    registrationExceptions.addExistingEmailIfExist(userHavingTheEmailInserted)
+    registrationExceptions.addExistingUsernameIfExist(userHavingTheUsernameInserted)
+    return registrationExceptions.obtainExceptionMessage()
   }
 
   function insertNewUserIntoDB() {
@@ -38,14 +39,15 @@ exports.register = function(req, res) {
     passwordEncryption.encrypt(password)
       .then((hashedPassword) => {
         usersCollection.insertNewUser(username, email, hashedPassword)
-          .then((userInserted) => { responseSender.success(res).sendStatus(201) })
-          .catch((dbError) => { responseSender.error(res).sendDatabaseError(dbError) })
+          .then((userInserted) => { responseSender.sendSuccess(201) })
+          .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
       })
-      .catch((encryptError) => { responseSender.error(res).sendEncryptError(encryptError) })
+      .catch((encryptError) => { responseSender.sendEncryptError(encryptError) })
   }
 }
 
 exports.logIn = function(req, res) {
+  const responseSender = new ResponseSender(res)
   const credentials = req.body
   const username = credentials.username
   usersCollection.findUserByUsername(username)
@@ -56,15 +58,15 @@ exports.logIn = function(req, res) {
             if (passwordsMatch) {
               logIn()
             } else {
-              sendWrongCredentialResponse()
+              sendWrongCredentialsResponse()
             }
           })
-          .catch((decryptError) => { responseSender.error(res).sendDecryptError(decryptError) })
+          .catch((decryptError) => { responseSender.sendDecryptError(decryptError) })
       } else {
-        sendWrongCredentialResponse()
+        sendWrongCredentialsResponse()
       }
     })
-    .catch((dbError) => { responseSender.error(res).sendDatabaseError(dbError) })
+    .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
 
   function comparePasswordInsertedWith(registeredUser) {
     const password = credentials.password
@@ -74,11 +76,11 @@ exports.logIn = function(req, res) {
 
   function logIn() {
     req.session.username = username
-    responseSender.success(res).sendStatus(200)
+    responseSender.sendSuccess(200)
   }
 
-  function sendWrongCredentialResponse() {
-    responseSender.exception(res).sendMessage('Incorrect username or password.')
+  function sendWrongCredentialsResponse() {
+    responseSender.sendExceptionMessage('Incorrect username or password.')
   }
 }
 
@@ -95,29 +97,39 @@ exports.logOut = function(req, res) {
   if (req.session.username) {
     logOut(req, res)
   } else {
-    responseSender.exception(res).sendMessage('User is not logged in.')
+    const responseSender = new ResponseSender(res)
+    responseSender.sendExceptionMessage('You are not logged in. Please reload this page.')
   }
 }
 
 function logOut(req, res) {
   delete req.session.username
-  responseSender.success(res).sendStatus(200)
+  const responseSender = new ResponseSender(res)
+  responseSender.sendSuccess(200)
 }
 
 exports.deleteAccount = function(req, res) {
+  const responseSender = new ResponseSender(res)
   const usernameLoggedIn = req.session.username
   if (stringUtilitiesOf(usernameLoggedIn).isStringType()) {
     usersCollection.deleteUserByUsername(usernameLoggedIn)
       .then((deletion) => { // deletion = { n: 1, ok: 1, deletedCount: 1 }
-        console.log(deletion);
         if (deletion.deletedCount === 1) {
           logOut(req, res)
-        } else {
-          responseSender.exception(res).sendMessage('Account not found. Please log out or clear your cookies, then try again.')
+        } else if (deletion.deletedCount === 0) {
+          sendAccountNotFoundResponse()
+        } else { // this code should never be reached !!!
+          const errorMessage = 'The username "' + usernameLoggedIn
+            + '" account deletion operation has produced the result: ' + deletion
+          responseSender.sendDatabaseError(errorMessage)
         }
       })
-      .catch((dbError) => { responseSender.error(res).sendDatabaseError(dbError) })
+      .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
   } else {
-    responseSender.error(res).sendMalformedRequestError()
+    sendAccountNotFoundResponse()
+  }
+
+  function sendAccountNotFoundResponse() {
+    responseSender.sendExceptionMessage('Account not found. Please log out or clear your cookies, then try again.')
   }
 }

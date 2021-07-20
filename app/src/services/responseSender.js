@@ -1,55 +1,37 @@
-exports.success = function(res) {
-  return {
-    sendStatus
+class ResponseSender {
+  constructor(res) {
+    this.res = res
   }
 
-  function sendStatus(status) {
-    res.status(status).send({ success: 'success' })
-  }
-}
-
-exports.exception = function(res) {
-  return {
-    sendMessage
+  sendSuccess(status) {
+    this.res.status(status).send({ success: 'success' })
   }
 
-  function sendMessage(exceptionMessage) {
-    res.send({ exceptionMessage : exceptionMessage })
-  }
-}
-
-exports.error = function(res) {
-  return {
-    sendDatabaseError,
-    sendEncryptError,
-    sendDecryptError,
-    sendMalformedRequestError
+  sendExceptionMessage(exceptionMessage) {
+    this.res.send({ exceptionMessage : exceptionMessage })
   }
 
-  function sendDatabaseError(dbError) {
+  sendDatabaseError(dbError) {
     console.log('Database Error:')
     console.log(dbError)
-    res.status(500).send(newErrorMessage('Internal Server Error 1.'))
+    this.res.status(500).send(newErrorMessage('Internal Server Error 1.'))
   }
 
-  function sendEncryptError(encryptError) {
+  sendEncryptError(encryptError) {
     console.log('Encryption Error:')
     console.log(encryptError)
-    res.status(500).send(newErrorMessage('Internal Server Error 2.'))
+    this.res.status(500).send(newErrorMessage('Internal Server Error 2.'))
   }
-
-  function sendDecryptError(decryptError) {
+  
+  sendDecryptError(decryptError) {
     console.log('Decryption Error:')
     console.log(decryptError)
-    res.status(500).send(newErrorMessage('Internal Server Error 3.'))
-  }
-
-  function sendMalformedRequestError() {
-    console.log('Malformed Request')
-    res.status(500).send(newErrorMessage('Internal Server Error 4.'))
-  }
-
-  function newErrorMessage(errorMessage) {
-    return { errorMessage: errorMessage }
+    this.res.status(500).send(newErrorMessage('Internal Server Error 3.'))
   }
 }
+
+function newErrorMessage(errorMessage) {
+  return { errorMessage: errorMessage }
+}
+
+module.exports = ResponseSender
