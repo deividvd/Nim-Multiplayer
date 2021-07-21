@@ -11,35 +11,44 @@ const Account = {
 
     <go-back-button/>
     
-    <section>
-      <p v-html="errorMessage"></p>
+    <main>
+      <section>
+        <p> Logged as: {{ username }} </p>
 
-      <p> Logged as: {{ username }} </p>
+        <p v-html="errorMessage"></p>
 
-      <button v-on:click="logout"> Sign out </button>
+        <button v-on:click="logout"> Sign out </button>
       
-      <button id="delete-account" v-on:click="deleteAccount"> Delete your Account </button>
-      <br/>
-      <form v-if="showPermanentlyDelete">
-        <button id="permanently-delete-account" v-on:click="permanentlyDeleteAccount" type="submit"> ARE YOU SURE? <br/> Click here to <br/> PERMANENTLY DELETE <br/> your account. </button>
-      </form>
-    </section>
+        <button id="delete-account" v-on:click="deleteAccount"> Delete your Account </button>
+        <br/>
+        <button v-if="showPermanentlyDelete" id="permanently-delete-account" v-on:click="permanentlyDeleteAccount">
+          ARE YOU SURE?
+          <br/>
+          Click here to
+          <br/>
+          PERMANENTLY DELETE
+          <br/>
+          your account.
+        </button>
+      </section>
+    </main>
 
   </div>
   `,
   data() {
     return {
-      username: null,
       errorMessage: '',
+      username: null,
       showPermanentlyDelete: false
     }
   },
   mounted() {
-    sessionUtilities().goHomeIfUserIsLoggedOutAndSetUsernameOf(this)
+    sessionUtilities().goHomeIfUserIsLoggedOut()
+    sessionUtilities().setUsernameOf(this)
   },
   methods: {
     logout: function() {
-      axios.post("https://localhost:3000/logout")
+      axios.post(serverAddress + 'logout')
         .then((response) => {
           responseResolverOf(this).addSuccessBehavior(successOf).resolve(response)
 
@@ -52,14 +61,13 @@ const Account = {
     deleteAccount: function() {
       this.showPermanentlyDelete = true
     },
-    permanentlyDeleteAccount: function(event) {
-      event.preventDefault()
-      axios.post("https://localhost:3000/delete-account")
+    permanentlyDeleteAccount: function() {
+      axios.post(serverAddress + 'delete-account')
         .then((response) => {
           responseResolverOf(this).addSuccessBehavior(successOf).resolve(response)
 
           function successOf(vueComponent) {
-            const deletionMessage = '): your account has been successfully deleted ):'
+            const deletionMessage = '): your account has been successfully deleted.'
             const nextPageParameters = { message: deletionMessage }
             twoPageRoutingFrom(vueComponent).addParameters(nextPageParameters).backToPrevious()
           }

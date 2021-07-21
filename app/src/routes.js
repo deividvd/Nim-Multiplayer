@@ -1,10 +1,10 @@
 module.exports = function(app) {
-  createUserRoutes(app)
-  createGameRoutes(app)
+  initUserRoutes(app)
+  initGameRoutes(app)
   useIndex(app)
 }
 
-function createUserRoutes(app) {
+function initUserRoutes(app) {
   const userController = require('./controllers/user')
   app.route('/register').post(userController.register)
   app.route('/login').post(userController.logIn)
@@ -13,11 +13,10 @@ function createUserRoutes(app) {
   app.route('/delete-account').post(userController.deleteAccount)
 }
 
-function createGameRoutes(app) {
-  //const gameController = require('./controllers/gameController')
-  app.route('/create-game-room')
-    //.post
-  app.route('/game/:id')
+function initGameRoutes(app) {
+  const gameController = require('./controllers/game')
+  app.route('/create-game-room').post(gameController.createGameRoom)
+  app.route('/game-room/:id')
 }
 
 function useIndex(app) {

@@ -36,7 +36,7 @@ const Register = {
             including a number, a lowercase and an uppercase letter.
           </p>
           
-          <button v-on:click="register"> Sign up </button>
+          <button v-on:click="register" type="submit"> Sign up </button>
         </form>
       </section>
     </main>
@@ -59,15 +59,14 @@ const Register = {
   methods: {
     register: function(event) {
       event.preventDefault()
-      this.errorMessage = gatherErrorMessagesIn(this.username, this.email, 
-          this.password, this.confirmPassword, this.passwordRequiredLenght)
+      this.errorMessage = gatherErrorMessagesIn(this)
       if (this.errorMessage === '') {
         const credential = {
           username: this.username,
           email: this.email,
           password: this.password
         }
-        axios.post("https://localhost:3000/register", credential)
+        axios.post(serverAddress + 'register', credential)
           .then((response) => {
             responseResolverOf(this).addSuccessBehavior(successOf).resolve(response)
 
@@ -80,7 +79,12 @@ const Register = {
           .catch((error) => { this.errorMessage = error })
       }
 
-      function gatherErrorMessagesIn(username, email, password, confirmPassword, passwordRequiredLenght) {
+      function gatherErrorMessagesIn(vueComponent) {
+        const username = vueComponent.username
+        const email = vueComponent.email
+        const password = vueComponent.password
+        const confirmPassword = vueComponent.confirmPassword
+        const passwordRequiredLenght = vueComponent.passwordRequiredLenght
         var htmlErrorMessage = ''
         applyMissingInputError()
         applyPasswordsDoNotMatchError()

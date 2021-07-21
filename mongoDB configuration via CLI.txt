@@ -1,8 +1,30 @@
 use nim_multiplayer
 
-db.users.insert( {_id: "username", email: "username@mail", password: "password"} )
+// user collection
 
-db.users.remove( {_id: "username"} )
+db.users.insert({
+	_id: "username",
+	email: "username@mail",
+	password: "password"
+})
 
-db.users.createIndex( { "email": 1 }, { unique: true } )
+db.users.remove({ _id: "username" })
 
+db.users.createIndex(
+	{"email": 1},
+	{ unique: true }
+)
+
+// game collection
+
+db.games.insert({
+	sticks: [
+		[ true ],
+		[ true, true ]
+	],
+	activePlayer: 0,
+	players: [ "a_username", "another_username" ],
+	eliminatedPlayers: [ "eliminated_username" ]
+})
+
+db.games.remove({ activePlayer: 0 })

@@ -2,7 +2,11 @@ class ResponseSender {
   constructor(res) {
     this.res = res
   }
-
+/*
+  sendSuccessStatusWithValue(status, value) {
+    this.res.status(status).send({ success: value })
+  }
+*/
   sendSuccess(status) {
     this.res.status(status).send({ success: 'success' })
   }

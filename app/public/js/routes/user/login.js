@@ -45,13 +45,13 @@ const Login = {
   methods: {
     login: function(event) {
       event.preventDefault()
-      this.errorMessage = gatherErrorMessagesIn(this.username, this.password)
+      this.errorMessage = gatherErrorMessagesIn(this)
       if (this.errorMessage === '') {
         const credential = {
           username: this.username,
           password: this.password
         }
-        axios.post("https://localhost:3000/login", credential)
+        axios.post(serverAddress + 'login', credential)
           .then((response) => {
             responseResolverOf(this).addSuccessBehavior(successOf).resolve(response)
 
@@ -62,7 +62,9 @@ const Login = {
 			    .catch((error) => { this.errorMessage = error })
       }
 
-      function gatherErrorMessagesIn(username, password) {
+      function gatherErrorMessagesIn(vueComponent) {
+        const username = vueComponent.username
+        const password = vueComponent.password
         var htmlErrorMessage = ''
         applyMissingInputError()
         return htmlErrorMessage

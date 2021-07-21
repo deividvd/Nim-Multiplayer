@@ -1,3 +1,5 @@
+const serverAddress = 'https://localhost:3000/'
+
 const HomeRoute = {
   path: '/',
   name: 'Home',
@@ -22,4 +24,12 @@ const CreateGameRoomRoute = {
   path: '/create-game-room',
   name: 'CreateGameRoom',
   component: CreateGameRoom
+}
+
+const gameRoomPath = '/game-room'
+
+const GameRoomRoute = {
+  path: gameRoomPath + '/:id',
+  name: 'GameRoom',
+  component: GameRoom
 }
