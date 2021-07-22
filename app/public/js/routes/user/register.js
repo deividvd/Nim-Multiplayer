@@ -16,7 +16,7 @@ const Register = {
         <h2> Create your Account </h2>
 
         <form>
-          <p v-html="errorMessage"></p>
+          <p v-html="errorMessage" class="errorMessage"></p>
 
           <label for="username"> Username </label>
           <input id="username" v-model="username" type="text" placeholder="Enter Username" />
@@ -54,7 +54,7 @@ const Register = {
     }
   },
   mounted() {
-    sessionUtilities().goHomeIfUserIsLoggedIn()
+    sessionUtilities().goHomeIfUserIsLoggedIn(this)
   },
   methods: {
     register: function(event) {

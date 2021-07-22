@@ -1,0 +1,42 @@
+.stick-line {
+  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.stick {
+  margin-left: 1px !important;
+  margin-right: 1px !important;
+}
+
+/* stick dimension in extra small devices (portrait phones),
+   if screen-width is under 440px: the last stick row renderization is ugly */
+   @media (min-width: 0px) { 
+    .stick {
+      max-width: 20px;
+      max-height: 75px;
+    } 
+  }
+// stick dimension in small devices (landscape phones)
+@media (min-width: 576px) {
+  .stick {
+    max-width: 27px;
+    max-height: 99px;
+  }
+}
+// stick dimension in medium devices (tablets)
+@media (min-width: 768px) {
+  .stick {
+    max-width: 38px;
+    max-height: 140px;
+  }
+}
+// stick dimension in large devices (desktops)
+@media (min-width: 992px) {
+  .stick {
+    max-width: 52px;
+    max-height: 195px;
+  }
+}

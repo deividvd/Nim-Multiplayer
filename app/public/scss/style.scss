@@ -5,43 +5,7 @@
 @import 'elements/go-back-button.scss';
 @import 'elements/how-to-play.scss';
 
-@import 'routes/account.scss';
-
 @import 'index.scss';
 
-
-
-
-// media queries
-
-// X-Small devices (portrait phones, less than 576px)
-// No media query necessary for xs breakpoint since this is the default in Bootstrap
-
-// Small devices (landscape phones, 576px and up)
-/*
-@include media-breakpoint-up(sm) {
-
-}
-
-// Medium devices (tablets, 768px and up)
-@include media-breakpoint-up(md) {
-
-}
-
-// Large devices (desktops, 992px and up)
-@include media-breakpoint-up(lg) {
-
-}
-*/
-// Usage
-// Example: Hide starting at `min-width: 0`, and then show at the `sm` breakpoint
-/*
-.custom_class {
-  display: none;
-}
-@include media-breakpoint-up(sm) {
-  .custom_class {
-    display: block;
-  }
-}
-*/
+@import 'routes/user/account.scss';
+@import 'routes/game/game.scss';

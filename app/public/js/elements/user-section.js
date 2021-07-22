@@ -2,6 +2,8 @@ const UserSection = {
   template:
   `
   <section>
+    <p v-html="errorMessage" class="errorMessage"></p>
+
     <div v-if="username">
       <p> Logged as: {{ username }} </p>
       <button v-on:click="goToAccount" type="button"> Manage Account </button>
@@ -15,6 +17,7 @@ const UserSection = {
   `,
   data() {
     return {
+      errorMessage: '',
       username: null
     }
   },

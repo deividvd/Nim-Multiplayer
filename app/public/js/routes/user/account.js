@@ -15,7 +15,7 @@ const Account = {
       <section>
         <p> Logged as: {{ username }} </p>
 
-        <p v-html="errorMessage"></p>
+        <p v-html="errorMessage" class="errorMessage"></p>
 
         <button v-on:click="logout"> Sign out </button>
       
@@ -43,7 +43,7 @@ const Account = {
     }
   },
   mounted() {
-    sessionUtilities().goHomeIfUserIsLoggedOut()
+    sessionUtilities().goHomeIfUserIsLoggedOut(this)
     sessionUtilities().setUsernameOf(this)
   },
   methods: {
