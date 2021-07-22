@@ -1,8 +1,5 @@
 const gameCollection = require('../db_access/game')
 const ResponseSender = require('../services/responseSender')
-// servono ???
-// const objectUtilitiesOf = require('../utilities/object')
-// const stringUtilitiesOf = require('../utilities/string')
 
 exports.createGameRoom = function(req, res) {
   const responseSender = new ResponseSender(res)
@@ -39,4 +36,12 @@ exports.createGameRoom = function(req, res) {
       .then((result) => { res.send({ gameId: result._id }) })
       .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
   }
+}
+
+exports.getGameById = function(req, res) {
+  const responseSender = new ResponseSender(res)
+  const gameId = req.body.gameId
+  gameCollection.findGameById(gameId)
+    .then((result) => { res.send({ game: result }) })
+    .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
 }

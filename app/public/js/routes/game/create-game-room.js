@@ -20,8 +20,6 @@ const CreateGameRoom = {
         <h2> Create your Game Room </h2>
 
         <form>
-          <p v-html="errorMessage"></p>
-
           <label for="players"> Players </label>
           <select id="players" v-model="players">
             <option value="2"> 2 </option>
@@ -45,15 +43,24 @@ const CreateGameRoom = {
 
           <label for="rows"> Rows </label>
           <select id="rows" v-model="rows">
-            <option value="3"> 3 </option>
             <option value="4"> 4 </option>
             <option value="5"> 5 </option>
             <option value="6"> 6 </option>
             <option value="7"> 7 </option>
             <option value="8"> 8 </option>
+            <option value="9"> 9 </option>
+            <option value="10"> 10 </option>
+            <option value="11"> 11 </option>
+            <option value="12"> 12 </option>
+            <option value="13"> 13 </option>
+            <option value="14"> 14 </option>
+            <option value="15"> 15 </option>
           </select>
         
           <br/>
+          <p v-html="errorMessage" class="errorMessage"></p>
+          <br/>
+          
           <button v-on:click="createGameRoom" type="submit"> CREATE GAME ROOM </button>
         </form>
       </section>
@@ -69,25 +76,33 @@ const CreateGameRoom = {
       players: 2,
       victory: 'Standard',
       turns: 'Rotation',
-      rows: 3,
+      rows: 4,
     }
   },
   methods: {
     createGameRoom: function(event) {
       event.preventDefault()
-      const standardVictory = isStandardVictoryOn(this.victory)
-      const turnRotation = isTurnRotationOn(this.turns)
-      const gameConfiguration = {
-        players: this.players,
-        standardVictory: standardVictory,
-        turnRotation: turnRotation,
-        rows: this.rows,
-      }
-      axios.post(serverAddress + 'create-game-room', gameConfiguration)
+      axios.get(serverAddress + 'get-user-logged-in')
         .then((response) => {
-          const gameId = response.data.gameId
-          const newGameRoomPath = gameRoomPath + '/' + gameId
-          router.push({ path: newGameRoomPath })
+          if (! response.data.username) {
+            this.errorMessage = 'You must log in before create a game.'
+          } else {
+            const standardVictory = isStandardVictoryOn(this.victory)
+            const turnRotation = isTurnRotationOn(this.turns)
+            const gameConfiguration = {
+              players: this.players,
+              standardVictory: standardVictory,
+              turnRotation: turnRotation,
+              rows: this.rows,
+            }
+            axios.post(serverAddress + 'create-game-room', gameConfiguration)
+              .then((response) => {
+                const gameId = response.data.gameId
+                const newGameRoomPath = gameRoomPath + '/' + gameId
+                router.push({ path: newGameRoomPath })
+              })
+              .catch((error) => { this.errorMessage = error })
+          }
         })
         .catch((error) => { this.errorMessage = error })
 
@@ -104,6 +119,15 @@ const CreateGameRoom = {
         }
         return false
       }
+    },
+    goToAccount: function() {
+      twoPageRoutingFrom(this).addParameters({}).goTo(AccountRoute)
+    },
+    goToLogin: function() {
+      twoPageRoutingFrom(this).addParameters({}).goTo(LoginRoute)
+    },
+    goToRegister: function() {
+      twoPageRoutingFrom(this).addParameters({}).goTo(RegisterRoute)
     }
   }
 }
