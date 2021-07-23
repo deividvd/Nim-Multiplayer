@@ -6442,6 +6442,10 @@ form {
   margin-right: 10%;
 }
 
+li::marker {
+  text-align: center !important;
+}
+
 footer {
   display: flex;
   flex-wrap: wrap;

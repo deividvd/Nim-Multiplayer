@@ -20,15 +20,6 @@ const CreateGameRoom = {
         <h2> Create your Game Room </h2>
 
         <form>
-          <label for="players"> Players </label>
-          <select id="players" v-model="players">
-            <option value="2"> 2 </option>
-            <option value="3"> 3 </option>
-            <option value="4"> 4 </option>
-            <option value="5"> 5 </option>
-            <option value="6"> 6 </option>
-          </select>
-
           <label for="victory"> Victory Mode </label>
           <select id="victory" v-model="victory">
             <option value="Standard"> Standard </option>
@@ -70,11 +61,10 @@ const CreateGameRoom = {
   `,
   data() {
     return {
-      errorMessage: '',
-      players: 2,
       victory: 'Standard',
       turns: 'Rotation',
       rows: 4,
+      errorMessage: '',
     }
   },
   methods: {
@@ -85,17 +75,16 @@ const CreateGameRoom = {
           if (response.data.username) {
             const standardVictory = isStandardVictoryOn(this.victory)
             const turnRotation = isTurnRotationOn(this.turns)
-            const gameConfiguration = {
-              players: this.players,
+            const invitePlayerRoomConfiguration = {
               standardVictory: standardVictory,
               turnRotation: turnRotation,
               rows: this.rows,
             }
-            axios.post(serverAddress + 'create-game-room', gameConfiguration)
+            axios.post(serverAddress + 'create-invite-player-room', invitePlayerRoomConfiguration)
               .then((response) => {
                 const gameId = response.data.gameId
-                const newGameRoomPath = gameRoomPath + '/' + gameId
-                router.push({ path: newGameRoomPath })
+                const newInvitePlayerRoomPath = invitePlayersRoomPath + '/' + gameId
+                router.push({ path: newInvitePlayerRoomPath })
               })
               .catch((error) => { this.errorMessage = error })
           } else {

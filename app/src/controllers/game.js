@@ -2,17 +2,34 @@ const gameCollection = require('../db_access/game')
 const ResponseSender = require('../services/responseSender')
 controlGameRoomWithSocketIO()
 
-exports.createGameRoom = function(req, res) {
+exports.createInvitePlayerRoom = function(req, res) {
   const responseSender = new ResponseSender(res)
-  const gameConfiguration = req.body
-  const players = gameConfiguration.players
-  const standardVictory = gameConfiguration.standardVictory
-  const turnRotation = gameConfiguration.turnRotation
-  const rows = gameConfiguration.rows
+  const invitePlayerRoomConfiguration = req.body
+  const standardVictory = invitePlayerRoomConfiguration.standardVictory
+  const turnRotation = invitePlayerRoomConfiguration.turnRotation
+  const rows = invitePlayerRoomConfiguration.rows
+  insertNewInvitePlayerRoomIntoDB(rows, standardVictory, turnRotation)
+  
+  function insertNewInvitePlayerRoomIntoDB(rows, standardVictory, turnRotation) {
+    gameCollection.insertNewInvitePlayerRoom(rows, standardVictory, turnRotation)
+      .then((result) => { res.send({ gameId: result._id }) })
+      .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
+  }
+}
+
+exports.getGameById = function(req, res) {
+  const responseSender = new ResponseSender(res)
+  const gameId = req.body.gameId
+  gameCollection.findGameById(gameId)
+    .then((result) => { res.send({ game: result }) })
+    .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
+}
+
+exports.createGameRoom = function(req, res) {
   const sticks = createSticks()
   const playersWithTurnDone = createPlayersWithTurnDone()
-  insertNewGameIntoDB(sticks, standardVictory, turnRotation, players, playersWithTurnDone)
-  
+  insertNewGameIntoDB(sticks, standardVictory, turnRotation, playersWithTurnDone)
+
   function createSticks() {
     const sticks = []
     for (let row = 0; row < rows; row++) {
@@ -32,21 +49,12 @@ exports.createGameRoom = function(req, res) {
     return []
   }
 
-  function insertNewGameIntoDB(sticks, standardVictory, turnRotation, players, playersWithTurnDone) {
-    gameCollection.insertNewGame(sticks, standardVictory, turnRotation, players, playersWithTurnDone)
+  function insertNewGameIntoDB(sticks, standardVictory, turnRotation, playersWithTurnDone) {
+    gameCollection.insertNewGame(sticks, standardVictory, turnRotation, playersWithTurnDone)
       .then((result) => { res.send({ gameId: result._id }) })
       .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
   }
 }
-
-exports.getGameById = function(req, res) {
-  const responseSender = new ResponseSender(res)
-  const gameId = req.body.gameId
-  gameCollection.findGameById(gameId)
-    .then((result) => { res.send({ game: result }) })
-    .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
-}
-
 
 function controlGameRoomWithSocketIO() {
   socketIO.on('connection', function(socket) {

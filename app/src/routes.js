@@ -15,8 +15,9 @@ function initUserRoutes(app) {
 
 function initGameRoutes(app) {
   const gameController = require('./controllers/game')
-  app.route('/create-game-room').post(gameController.createGameRoom)
-  app.route('/game-room').post(gameController.getGameById)
+  app.route('/create-invite-player-room').post(gameController.createInvitePlayerRoom)
+  app.route('/get-game-by-id').post(gameController.getGameById)
+  
   // app.route('/game-move').post
 }
 

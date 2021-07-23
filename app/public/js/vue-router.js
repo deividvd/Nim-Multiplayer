@@ -8,6 +8,7 @@ const router = new VueRouter({
       LoginRoute,
       AccountRoute,
       CreateGameRoomRoute,
+      InvitePlayersRoomRoute,
       GameRoomRoute,
       // { path: '/game-room/:id', /*, name: GameRoom*/ component: CreateGameRoom },
       { path: '/404', component: NotFoundError },

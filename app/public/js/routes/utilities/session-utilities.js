@@ -1,18 +1,27 @@
 function sessionUtilities() {
+  const getUserLoggedInPath = serverAddress + 'get-user-logged-in'
+
   return {
     setUsernameOf,
+    promiseSetUsernameOf,
     goHomeIfUserIsLoggedIn,
-    goHomeIfUserIsLoggedOut
+    goHomeIfUserIsLoggedOut,
   }
 
   function setUsernameOf(vueComponent) {
-    axios.get(serverAddress + 'get-user-logged-in')
+    axios.get(getUserLoggedInPath)
       .then((response) => { vueComponent.username = response.data.username })
       .catch((error) => { vueComponent.errorMessage = error })
   }
 
+  function promiseSetUsernameOf(vueComponent) {
+    return axios.get(getUserLoggedInPath)
+      .then(response => { vueComponent.username = response.data.username })
+      .catch((error) => { vueComponent.errorMessage = error })
+  }
+
   function goHomeIfUserIsLoggedIn(vueComponent) {
-    axios.get(serverAddress + 'get-user-logged-in')
+    axios.get(getUserLoggedInPath)
       .then((response) => {
         if (response.data.username) {
           router.push({ name: HomeRoute.name })
@@ -22,7 +31,7 @@ function sessionUtilities() {
   }
 
   function goHomeIfUserIsLoggedOut(vueComponent) {
-    axios.get(serverAddress + 'get-user-logged-in')
+    axios.get(getUserLoggedInPath)
       .then((response) => {
         if (! response.data.username) {
           router.push({ name: HomeRoute.name })
@@ -30,5 +39,4 @@ function sessionUtilities() {
       })
       .catch((error) => { vueComponent.errorMessage = error })
   }
-
 }
