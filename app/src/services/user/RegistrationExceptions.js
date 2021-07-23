@@ -25,8 +25,11 @@ class RegistrationExceptions {
     if (this.emailExists) {
       exceptionMessage = 'The email is already registered.'
     }
-    if (this.usernameExists) {
-      exceptionMessage = exceptionMessage.concat(' <br/> The username is already taken.')
+    const usernameIsTakenMessage = 'The username is already taken.'
+    if (this.emailExists && this.usernameExists) {
+      exceptionMessage = exceptionMessage.concat(' <br/> ' + usernameIsTakenMessage)
+    } else if (this.usernameExists) {
+      exceptionMessage = usernameIsTakenMessage
     }
     return exceptionMessage
   }
