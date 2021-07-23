@@ -7,9 +7,7 @@ function sessionUtilities() {
 
   function setUsernameOf(vueComponent) {
     axios.get(serverAddress + 'get-user-logged-in')
-      .then(response => {
-        vueComponent.username = response.data.username
-      })
+      .then((response) => { vueComponent.username = response.data.username })
       .catch((error) => { vueComponent.errorMessage = error })
   }
 

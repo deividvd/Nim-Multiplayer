@@ -17,8 +17,8 @@ const UserSection = {
   `,
   data() {
     return {
+      username: null,
       errorMessage: '',
-      username: null
     }
   },
   mounted() {

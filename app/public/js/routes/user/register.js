@@ -45,12 +45,12 @@ const Register = {
   `,
   data() {
     return {
-      errorMessage: '',
       username: '',
       email: '',
       password: '',
       confirmPassword: '',
-      passwordRequiredLenght: 8
+      passwordRequiredLenght: 8,
+      errorMessage: '',
     }
   },
   mounted() {

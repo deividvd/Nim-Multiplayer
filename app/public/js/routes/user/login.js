@@ -33,9 +33,9 @@ const Login = {
   `,
   data() {
     return {
-      errorMessage: '',
       username: '',
-      password: ''
+      password: '',
+      errorMessage: '',
     }
   },
   mounted() {

@@ -37,9 +37,9 @@ const Account = {
   `,
   data() {
     return {
-      errorMessage: '',
       username: null,
-      showPermanentlyDelete: false
+      errorMessage: '',
+      showPermanentlyDelete: false,
     }
   },
   mounted() {
