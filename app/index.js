@@ -1,8 +1,10 @@
 createDBConnection()
 createGlobalAppRoot()
-const app = createExpressApp()
-startServer(app)
-
+const app = newExpressApp()
+const httpsServer = newHTTPSServer(app)
+createSocketIO(httpsServer)
+createRoutes()
+startHTTPSServer(httpsServer)
 
 function createDBConnection() {
   const mongoose = require('mongoose')
@@ -21,14 +23,13 @@ function createGlobalAppRoot() {
   global.appRoot = path.resolve(__dirname)
 }
 
-function createExpressApp() {
+function newExpressApp() {
   const express = require('express')
   const app = express()
   serveFrontEndFiles()
   useJSONRequest()
   enableCORS()
   createExpressSession()
-  createRoutes()
   return app
 
   function serveFrontEndFiles() {
@@ -81,18 +82,12 @@ function createExpressApp() {
     }
     app.use(session(nimMultiplayerSessionSettings))
   }
-
-  function createRoutes() {
-    const routes = require('./src/routes.js')
-    routes(app)
-  }
 }
 
-function startServer(app) {
+function newHTTPSServer(app) {
   const httpsCredentials = createHTTPSCredential()
-  const httpsServer = createHTTPSServer()
-  startHTTPSServer()
-
+  return createHTTPSServer()
+  
   function createHTTPSCredential() {
     const fs = require('fs')
     const privateKey = fs.readFileSync('https_stuff/server.key', 'utf8')
@@ -107,17 +102,27 @@ function startServer(app) {
     const https = require('https')
     return https.createServer(httpsCredentials, app)
   }
+}
 
-  function startHTTPSServer() {
-    const port = 3000
-    httpsServer.listen(port,
-        function() {
-          console.log('\n HTTPS Node Express server started on port ' + port)
-          console.log("\n N.B.: the server will listen on:")
-          console.log("\n https://localhost:/" + port)
-          console.log("\n ... and the connection will be insecure! ( https certificate self-signed )")
-          console.log("")
-        }
-    )
-  }
+function createSocketIO(httpsServer) {
+  const io = require('socket.io')
+  global.socketIO = io(httpsServer)
+}
+
+function createRoutes() {
+  const routes = require('./src/routes.js')
+  routes(app)
+}
+
+function startHTTPSServer(httpsServer) {
+  const port = 3000
+  httpsServer.listen(port,
+      function() {
+        console.log('\n HTTPS Node Express server started on port ' + port)
+        console.log("\n N.B.: the server will listen on:")
+        console.log("\n https://localhost:/" + port)
+        console.log("\n ... and the connection will be insecure! ( https certificate self-signed )")
+        console.log("")
+      }
+  )
 }

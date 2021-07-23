@@ -1,5 +1,6 @@
 const gameCollection = require('../db_access/game')
 const ResponseSender = require('../services/responseSender')
+controlGameRoomWithSocketIO()
 
 exports.createGameRoom = function(req, res) {
   const responseSender = new ResponseSender(res)
@@ -11,7 +12,7 @@ exports.createGameRoom = function(req, res) {
   const sticks = createSticks()
   const playersWithTurnDone = createPlayersWithTurnDone()
   insertNewGameIntoDB(sticks, standardVictory, turnRotation, players, playersWithTurnDone)
-
+  
   function createSticks() {
     const sticks = []
     for (let row = 0; row < rows; row++) {
@@ -44,4 +45,51 @@ exports.getGameById = function(req, res) {
   gameCollection.findGameById(gameId)
     .then((result) => { res.send({ game: result }) })
     .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
+}
+
+
+function controlGameRoomWithSocketIO() {
+  socketIO.on('connection', function(socket) {
+    const gameRoomEvent = socket.handshake.query.gameRoomEvent
+    const prepareGameEvent = socket.handshake.query.prepareGameEvent
+    console.log(socket.id + ' joins the room ' + gameRoomEvent);
+    
+    // nickname: ricezione
+    socket.on(prepareGameEvent, function(username){
+      socket.username = username;
+      console.log(username);
+    });
+
+    // invia messaggio a tutti i client
+    socketIO.emit(gameRoomEvent, 
+      {
+        nickname: "server", content: "Un nuovo utente si è connesso"});
+
+    socket.on('disconnect', function(){
+      console.log('user disconnected');
+    });
+
+    /*
+    // invia messaggio a tutti i client
+    io.emit('chat message', { nickname: "server", content: "Un nuovo utente si è connesso"});
+    
+    socket.nickname = "Anonimo";
+  
+    // nickname: ricezione
+    socket.on('change nickname', function(nickname){
+      socket.nickname = nickname;
+    console.log(nickname);
+    }); 
+    
+    // message: ricezione e invio
+    socket.on('chat message', function(msg){
+      io.emit('chat message', { nickname: socket.nickname, content: msg});
+    });
+    
+    // DISCONNESSIONE
+    socket.on('disconnect', function(){
+      console.log('user disconnected');
+    });
+    */
+  })
 }

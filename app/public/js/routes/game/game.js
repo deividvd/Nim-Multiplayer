@@ -20,21 +20,24 @@ const GameRoom = {
   `,
   data() {
     return {
+      username: null,
+      gameId: null,
       errorMessage: '',
       sticks: null
     }
-      // username: null,
-      // socket: null,
   },
   mounted() {
+    sessionUtilities().goHomeIfUserIsLoggedOut(this)
+    sessionUtilities().setUsernameOf(this)
+    const currentPath = this.$route.path // "$route" works only with "this." and not with the "vueComponent."
+    const resourcesArray = currentPath.split('/')
+    this.gameId = resourcesArray[ resourcesArray.length - 1 ]
     initializeSticksOf(this)
-    
+
+    connectSocketIO(this)
+
     function initializeSticksOf(vueComponent) {
-      const currentPath = vueComponent.$route.path
-      const resourcesArray = currentPath.split('/')
-      const gameId = resourcesArray[resourcesArray.length - 1]
-      const gameIdObject = { gameId: gameId }
-      axios.post(serverAddress + 'game-room', gameIdObject)
+      axios.post(serverAddress + 'game-room', { gameId: vueComponent.gameId })
         .then((response) => { 
           const stickValues = response.data.game.sticks
           const sticks = []
@@ -60,11 +63,51 @@ const GameRoom = {
         })
         .catch((error) => { this.errorMessage = error })
     }
+
+    function connectSocketIO(vueComponent) {
+      const gameRoomEvent = vueComponent.gameId 
+      const prepareGameEvent = gameRoomEvent + 'preparation'
+      // questa riga fa triggerare la connection!!!
+      console.log("porcodiooo");
+      const socket = io(serverAddress,
+        {
+          query: {
+            // username: vueComponent.username,
+            gameRoomEvent: gameRoomEvent,
+            prepareGameEvent: prepareGameEvent
+          } 
+        })
+      console.log("diocaneee");
+      /*
+      // nickname: invio
+      $('#form_nickname').submit(function(e){
+		    e.preventDefault();
+        socket.emit('change nickname', $('#nickname').val());
+        return false;
+      });
+
+      // message: invio
+		  $('#form_messages').submit(function(e){
+		    e.preventDefault();
+        socket.emit('chat message', $('#m').val());
+        $('#m').val('');
+        return false;
+      });
+      
+      // message: ricezione
+      socket.on('chat message', function(msg){
+        $('#messages').append($('<li>').text(msg.nickname + ": " + msg.content));
+      });
+      */
+
+    }
+
   },
   methods: {
     selectStick: function(stick) {
       console.log("row:" + stick.row + "-number:" + stick.number + "-value:" + stick.value);
       stick.removed = true
+      console.log(this.username);
     }
   }
 }
