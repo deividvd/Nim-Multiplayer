@@ -57,9 +57,7 @@ const CreateGameRoom = {
             <option value="15"> 15 </option>
           </select>
         
-          <br/>
           <p v-html="errorMessage" class="errorMessage"></p>
-          <br/>
           
           <button v-on:click="createGameRoom" type="submit"> CREATE GAME ROOM </button>
         </form>
@@ -84,9 +82,7 @@ const CreateGameRoom = {
       event.preventDefault()
       axios.get(serverAddress + 'get-user-logged-in')
         .then((response) => {
-          if (! response.data.username) {
-            this.errorMessage = 'You must log in before create a game.'
-          } else {
+          if (response.data.username) {
             const standardVictory = isStandardVictoryOn(this.victory)
             const turnRotation = isTurnRotationOn(this.turns)
             const gameConfiguration = {
@@ -102,6 +98,8 @@ const CreateGameRoom = {
                 router.push({ path: newGameRoomPath })
               })
               .catch((error) => { this.errorMessage = error })
+          } else {
+            this.errorMessage = 'You must log in before create a game.'
           }
         })
         .catch((error) => { this.errorMessage = error })

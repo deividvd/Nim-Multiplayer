@@ -16,15 +16,14 @@ const Login = {
         <h2> Login </h2>
 
         <form>
-          <p v-html="errorMessage" class="errorMessage"></p>
-          
           <label for="username"> Username </label>
           <input id="username" v-model="username" type="text" placeholder="Enter Username" />
           
           <label for="password"> Password </label>
           <input id="password" v-model="password" type="password" placeholder="Enter Password" />
           
-          <br/>
+          <p v-html="errorMessage" class="errorMessage"></p>
+
           <button v-on:click="login" type="submit"> Sign in </button>
         </form>
       </section>

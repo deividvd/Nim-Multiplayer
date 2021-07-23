@@ -16,8 +16,6 @@ const Register = {
         <h2> Create your Account </h2>
 
         <form>
-          <p v-html="errorMessage" class="errorMessage"></p>
-
           <label for="username"> Username </label>
           <input id="username" v-model="username" type="text" placeholder="Enter Username" />
           
@@ -35,6 +33,8 @@ const Register = {
             {{ passwordRequiredLenght }} characters,
             including a number, a lowercase and an uppercase letter.
           </p>
+
+          <p v-html="errorMessage" class="errorMessage"></p>
           
           <button v-on:click="register" type="submit"> Sign up </button>
         </form>

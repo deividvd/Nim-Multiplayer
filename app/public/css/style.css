@@ -2291,7 +2291,7 @@ textarea.form-control-lg {
   margin: 0 !important;
 }
 
-.m-1, button, .errorMessage {
+.m-1, button {
   margin: 0.25rem !important;
 }
 
@@ -2303,7 +2303,7 @@ textarea.form-control-lg {
   margin: 1rem !important;
 }
 
-.m-4 {
+.m-4, .errorMessage {
   margin: 1.5rem !important;
 }
 
