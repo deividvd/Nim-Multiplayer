@@ -34,7 +34,7 @@ const invitePlayersRoomPath = '/invite-players-room'
 const InvitePlayersRoomRoute = {
   path: invitePlayersRoomPath + '/:id',
   name: 'WaitPlayersRoom',
-  component: WaitPlayersRoom
+  component: InvitePlayersRoom
 }
 
 const gameRoomPath = '/game-room'

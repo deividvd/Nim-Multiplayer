@@ -25,7 +25,24 @@ exports.getGameById = function(req, res) {
     .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
 }
 
+/////////////////////////////////////////////////////////////////////////
+
 exports.createGameRoom = function(req, res) {
+
+  // standard victory
+  function shuffle(array) {
+    var currentIndex = array.length,  randomIndex;
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+      // Pick a remaining element...
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+      // And swap it with the current element.
+      [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+  }
+
   const sticks = createSticks()
   const playersWithTurnDone = createPlayersWithTurnDone()
   insertNewGameIntoDB(sticks, standardVictory, turnRotation, playersWithTurnDone)
@@ -51,24 +68,62 @@ exports.createGameRoom = function(req, res) {
 
   function insertNewGameIntoDB(sticks, standardVictory, turnRotation, playersWithTurnDone) {
     gameCollection.insertNewGame(sticks, standardVictory, turnRotation, playersWithTurnDone)
-      .then((result) => { res.send({ gameId: result._id }) })
+      .then((result) => { 
+        console.log(result._id);
+        res.send({ gameId: result._id }) })
       .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
   }
 }
 
 function controlGameRoomWithSocketIO() {
-  socketIO.on('connection', function(socket) {
-    const gameRoomEvent = socket.handshake.query.gameRoomEvent
-    const prepareGameEvent = socket.handshake.query.prepareGameEvent
-    console.log(socket.id + ' joins the room ' + gameRoomEvent);
+  // 'connection' event = a player join the "invite-player-room"
+  io.on('connection', function(socket) {
+    socket.username = socket.handshake.query.username
+    const notify = socket.handshake.query.notify
+    const update = socket.handshake.query.update
+    setupStartGame(socket)
+    setupUpdateReceptionOf(socket)
+    setupDisconnectionReceptionOf(socket)
+    setupNotifyReceptionOf(socket)
+
+    function setupNotifyReceptionOf(socket) {
+      socket.on(notify, function(username) {
+        io.emit(notify, username)
+        console.log('emit notify ' + username + ' in event ' + notify);
+      })
+    }
+
+    function setupUpdateReceptionOf(socket) {
+      socket.on(update, function(user) {
+        io.emit(update, user)
+        console.log('emit update "' + user + ' in event: ' + update);
+      })
+    }
+
+    function setupDisconnectionReceptionOf(socket) {
+      socket.on('disconnect', function() {
+        const user = {
+          username: socket.username,
+          disconnected: true,
+        }
+        io.emit(update, user)
+        console.log('emit disconnection "' + user + ' in event: ' + update);
+      })
+    }
+
+    function setupStartGame(socket) {
+      const gameId = socket.handshake.query.gameId
+      socket.on(gameId, function() {
+        socket.removeAllListeners(notify)
+        socket.removeAllListeners(update)
+        // define game listeners
+        io.emit(gameId)
+      })
+    }
     
-    // nickname: ricezione
-    socket.on(prepareGameEvent, function(username){
-      socket.username = username;
-      console.log(username);
-    });
 
     // invia messaggio a tutti i client
+    /*
     socketIO.emit(gameRoomEvent, 
       {
         nickname: "server", content: "Un nuovo utente si è connesso"});
@@ -76,7 +131,7 @@ function controlGameRoomWithSocketIO() {
     socket.on('disconnect', function(){
       console.log('user disconnected');
     });
-
+*/
     /*
     // invia messaggio a tutti i client
     io.emit('chat message', { nickname: "server", content: "Un nuovo utente si è connesso"});

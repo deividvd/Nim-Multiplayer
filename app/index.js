@@ -106,7 +106,7 @@ function newHTTPSServer(app) {
 
 function createSocketIO(httpsServer) {
   const io = require('socket.io')
-  global.socketIO = io(httpsServer)
+  global.io = io(httpsServer)
 }
 
 function createRoutes() {

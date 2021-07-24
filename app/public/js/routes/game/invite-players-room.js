@@ -1,34 +1,32 @@
-const WaitPlayersRoom = {
+const InvitePlayersRoom = {
   components: {
     'app-header': AppHeader,
   },
   template:
   `
   <div>
-
-    <app-header/>
-
     <main>
       <section>
-        <h2> Invite other Players! </h2>
+        <div v-if="gameExists && username">
+          <h1> Invite other Players! </h1>
 
-        <div v-if="gameExists & username">
           <p> Copy and link the URL of this page to invite other players! </p>
 
-          <p class="errorMessage"> Do <b>NOT REFRESH</b> the page or you will be <b>ELIMINATED</b> from the game. </p>
-
           <form>
-            <p> Max Player Number {{ maxPlayerNumber }} </p>
+            <p> Players (Max Number {{ maxPlayerNumber }}): </p>
           
             <ol>
-              <li> {{ username }} </li>
               <li v-for="player in players">
                 {{ player }}
               </li>
             </ol>
+
+            <button v-on:click="startGame" type="submit"> Start Game! </button>
           </form>
         </div>
         <div v-else>
+          <app-header/>
+
           <p v-html="errorMessage" class="errorMessage"></p>
         </div>
       </section>
@@ -43,6 +41,7 @@ const WaitPlayersRoom = {
       players: [],
       errorMessage: '',
       gameId: null,
+      socket: null,
     }
   },
   mounted() {
@@ -53,7 +52,7 @@ const WaitPlayersRoom = {
       .then((results) => {
         createAndSetErrorMessageOf(this) 
         if (this.errorMessage === '') {
-          // connectSocketIO(this)
+          connectSocketIO(this)
         }
       })
       .catch((error) => { this.errorMessage = error })
@@ -92,41 +91,75 @@ const WaitPlayersRoom = {
     }
 
     function connectSocketIO(vueComponent) {
-      const gameRoomEvent = vueComponent.gameId 
-      const prepareGameEvent = gameRoomEvent + 'preparation'
-      // questa riga fa triggerare la connection!!!
-      const socket = io(serverAddress,
-        {
-          query: {
-            // username: vueComponent.username,
-            gameRoomEvent: gameRoomEvent,
-            prepareGameEvent: prepareGameEvent
-          } 
+      const username = vueComponent.username
+      const gameId = vueComponent.gameId
+      const notify = gameId + '- notify user'
+      const update = gameId + '- update user'
+      const connectionOptions = {
+        query: {
+          username: username,
+          notify: notify,
+          update: update,
+          gameId: gameId,
+        }
+      }
+      const socket = io(serverAddress, connectionOptions)
+      setupStartGameReceptionOf(vueComponent)
+      setupUpdateReceptionOf(vueComponent)
+      setupNotifyReceptionOf(vueComponent)
+      emitNotify()
+      vueComponent.socket = socket
+
+      function emitNotify() {
+        socket.emit(notify, username)
+        console.log('notify sent: ' + username);
+      }
+
+      function setupNotifyReceptionOf(vueComponent) {
+        socket.on(notify, function(username) {
+          console.log('notify received: ' + username);
+          const user = { username: vueComponent.username }
+          socket.emit(update, user)
+          console.log('   ' + 'update sent: ' + user);
         })
-      /*
-      // nickname: invio
-      $('#form_nickname').submit(function(e){
-		    e.preventDefault();
-        socket.emit('change nickname', $('#nickname').val());
-        return false;
-      });
+      }
 
-      // message: invio
-		  $('#form_messages').submit(function(e){
-		    e.preventDefault();
-        socket.emit('chat message', $('#m').val());
-        $('#m').val('');
-        return false;
-      });
-      
-      // message: ricezione
-      socket.on('chat message', function(msg){
-        $('#messages').append($('<li>').text(msg.nickname + ": " + msg.content));
-      });
-      */
+      function setupUpdateReceptionOf(vueComponent) {
+        const players = vueComponent.players
+        socket.on(update, function(user) {
+          console.log('update received: ' + user);
+          const username = user.username
+          const disconnected = user.disconnected
+          if (! disconnected) {
+            if (players.includes(username)) {
+              console.log('   ' + username + ": is already on page");
+            } else {
+              console.log('   ' + "new username on page: " + username);
+              players.push(username)
+            }
+          } else {
+            console.log('   ' + username + ": is disconnected" );
+            const usernameIndex = players.indexOf(username);
+            if (usernameIndex !== -1) {
+              players.splice(usernameIndex, 1);
+            }
+          }
+        })
+      }
 
+      function setupStartGameReceptionOf(vueComponent) {
+        socket.on(vueComponent.gameId, function() {
+          // router push
+          // mettere come post la "this.socket"
+        })
+      }
     }
   },
   methods: {
+    startGame: function(event) {
+      event.preventDefault()
+      // update game in database
+      // socket.emit(this.gameId)
+    }
   }
 }
