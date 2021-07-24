@@ -20,9 +20,17 @@ exports.createInvitePlayerRoom = function(req, res) {
 exports.getGameById = function(req, res) {
   const responseSender = new ResponseSender(res)
   const gameId = req.body.gameId
-  gameCollection.findGameById(gameId)
-    .then((result) => { res.send({ game: result }) })
-    .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
+  if (isIdValidForMongoDB(gameId)) {
+    gameCollection.findGameById(gameId)
+      .then((result) => { res.send({ game: result }) })
+      .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
+  } else {
+    res.send({ game: null })
+  }
+  
+  function isIdValidForMongoDB(id) {
+    return /[0-9A-Fa-f]{24}/.test(id)
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -89,14 +97,15 @@ function controlGameRoomWithSocketIO() {
     function setupNotifyReceptionOf(socket) {
       socket.on(notify, function(username) {
         io.emit(notify, username)
-        console.log('emit notify ' + username + ' in event ' + notify);
+        console.log('2 - notify: ' + username + '; event = ' + notify);
       })
     }
 
     function setupUpdateReceptionOf(socket) {
       socket.on(update, function(user) {
         io.emit(update, user)
-        console.log('emit update "' + user + ' in event: ' + update);
+        console.log('3 - update: ' + user.username 
+            + '; disconnected = ' + user.disconnected + '; event = ' + update);
       })
     }
 
@@ -107,7 +116,7 @@ function controlGameRoomWithSocketIO() {
           disconnected: true,
         }
         io.emit(update, user)
-        console.log('emit disconnection "' + user + ' in event: ' + update);
+        console.log('5 - disconnection: ' + user.username + '; event = ' + update);
       })
     }
 
@@ -116,6 +125,7 @@ function controlGameRoomWithSocketIO() {
       socket.on(gameId, function() {
         socket.removeAllListeners(notify)
         socket.removeAllListeners(update)
+        console.log('all listeners: \n' + socket.listenersAny())
         // define game listeners
         io.emit(gameId)
       })

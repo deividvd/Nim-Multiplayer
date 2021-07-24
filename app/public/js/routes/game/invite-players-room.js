@@ -112,33 +112,33 @@ const InvitePlayersRoom = {
 
       function emitNotify() {
         socket.emit(notify, username)
-        console.log('notify sent: ' + username);
+        console.log('1 - notify sent: ' + username);
       }
 
       function setupNotifyReceptionOf(vueComponent) {
         socket.on(notify, function(username) {
-          console.log('notify received: ' + username);
+          console.log('2 - notify received: ' + username);
           const user = { username: vueComponent.username }
           socket.emit(update, user)
-          console.log('   ' + 'update sent: ' + user);
+          console.log('2 - update sent: ' + user.username);
         })
       }
 
       function setupUpdateReceptionOf(vueComponent) {
         const players = vueComponent.players
         socket.on(update, function(user) {
-          console.log('update received: ' + user);
+          console.log('3 - update received: ' + user.username + '; disconnected = ' + user.disconnected);
           const username = user.username
           const disconnected = user.disconnected
           if (! disconnected) {
             if (players.includes(username)) {
-              console.log('   ' + username + ": is already on page");
+              console.log('4 - ' + username + ': is already on page');
             } else {
-              console.log('   ' + "new username on page: " + username);
+              console.log('4 - ' + 'new username on page: ' + username);
               players.push(username)
             }
           } else {
-            console.log('   ' + username + ": is disconnected" );
+            console.log('5 - ' + username + ': is disconnected' );
             const usernameIndex = players.indexOf(username);
             if (usernameIndex !== -1) {
               players.splice(usernameIndex, 1);
