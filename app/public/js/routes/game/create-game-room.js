@@ -73,19 +73,9 @@ const CreateGameRoom = {
       axios.get(serverAddress + 'get-user-logged-in')
         .then((response) => {
           if (response.data.username) {
-            const standardVictory = isStandardVictoryOn(this.victory)
-            const turnRotation = isTurnRotationOn(this.turns)
-            const invitePlayerRoomConfiguration = {
-              standardVictory: standardVictory,
-              turnRotation: turnRotation,
-              rows: this.rows,
-            }
+            const invitePlayerRoomConfiguration = newInvitePlayerRoomConfiguration(this)
             axios.post(serverAddress + 'create-invite-player-room', invitePlayerRoomConfiguration)
-              .then((response) => {
-                const gameId = response.data.gameId
-                const newInvitePlayerRoomPath = invitePlayersRoomPath + '/' + gameId
-                router.push({ path: newInvitePlayerRoomPath })
-              })
+              .then((response) => { goToInvitePlayerRoom(response.data.gameId) })
               .catch((error) => { this.errorMessage = error })
           } else {
             this.errorMessage = 'You must log in before create a game.'
@@ -93,18 +83,33 @@ const CreateGameRoom = {
         })
         .catch((error) => { this.errorMessage = error })
 
-      function isStandardVictoryOn(victory) {
-        if (victory === 'Standard') {
-          return true
+      function newInvitePlayerRoomConfiguration(vueComponent) {
+        const standardVictory = isStandardVictoryOn(vueComponent.victory)
+        const turnRotation = isTurnRotationOn(vueComponent.turns)
+        return {
+          standardVictory: standardVictory,
+          turnRotation: turnRotation,
+          rows: vueComponent.rows,
         }
-        return false
+
+        function isStandardVictoryOn(victory) {
+          if (victory === 'Standard') {
+            return true
+          }
+          return false
+        }
+
+        function isTurnRotationOn(turns) {
+          if (turns === 'Rotation') {
+            return true
+          }
+          return false
+        }
       }
 
-      function isTurnRotationOn(turns) {
-        if (turns === 'Rotation') {
-          return true
-        }
-        return false
+      function goToInvitePlayerRoom(gameId) {
+        const nextPagePath = invitePlayersRoomPath + '/' + gameId
+        router.push({ path: nextPagePath })
       }
     },
     goToAccount: function() {
