@@ -14,7 +14,7 @@ exports.insertNewUser = function(username, email, password) {
 }
 
 exports.deleteUserByUsername = function(username) {
-  return User.deleteOne({ _id: username })
+  return User.deleteOne({ _id: username }).lean()
 }
 
 exports.findUserByUsername = function(username) {
