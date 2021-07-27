@@ -15,26 +15,22 @@
   </div>
 
   <!-- external libraries -->
+        <!-- axios -->
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <!-- socket.io -->
   <script src="/socket.io/socket.io.js"></script>
-  <!-- vue libraries -->
+        <!-- vue libraries -->
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   <script src="https://npmcdn.com/vue-router/dist/vue-router.js"></script>
 
   <!-- Javascript utilities -->
   <script src="/static/js/utilities/string.js"></script>
-  <!-- <script src="/static/js/object-utilities.js"></script> -->
 
-  <!-- vue components that represent an HTML element -->
+  <!-- vue components that represent an HTML (tag) element -->
   <script src="/static/js/elements/app-header.js"></script>
   <script src="/static/js/elements/go-back-button.js"></script>
   <script src="/static/js/elements/user-section.js"></script>
   <script src="/static/js/elements/how-to-play.js"></script>
-
-  <!-- utilities -->
-  <script src="/static/js/routes/utilities/two-page-routing.js"></script>
-  <script src="/static/js/routes/utilities/response-resolver.js"></script>
-  <script src="/static/js/routes/utilities/session-utilities.js"></script>
 
   <!-- vue components used by the router: each one represents a route -->
   <script src="/static/js/routes/404.js"></script>
@@ -50,9 +46,13 @@
   <script src="/static/js/routes/policies/privacy.js"></script>
   <script src="/static/js/routes/policies/terms-of-service.js"></script>
 
-  <!-- application's router -->
-  <script src="/static/js/shared-routes.js"></script>
-  <script src="/static/js/vue-router.js"></script>
+  <!-- application's routes and vue router -->
+  <script src="/static/js/routes-and-vue-router.js"></script>
+
+  <!-- application's utilities -->
+  <script src="/static/js/routes/utilities/two-page-routing.js"></script>
+  <script src="/static/js/routes/utilities/response-resolver.js"></script>
+  <script src="/static/js/routes/utilities/session-utilities.js"></script>
 
   <script>
     const app = new Vue({
