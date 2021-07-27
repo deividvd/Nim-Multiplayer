@@ -6,10 +6,11 @@ function responseResolverOf(vueComponent) {
       }
 
       function resolve(response) {
-        if (! response.data.exceptionMessage) {
+        const exceptionMessage = response.data.exceptionMessage
+        if (! exceptionMessage) {
           successBehaviorOf(vueComponent)
         } else {
-          vueComponent.errorMessage = response.data.exceptionMessage
+          vueComponent.errorMessage = exceptionMessage
         }
       }
     }
