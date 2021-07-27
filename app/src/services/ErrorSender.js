@@ -1,12 +1,14 @@
-class ResponseSender {
+class ErrorSender {
   constructor(res) {
     this.res = res
   }
-  
-  sendSuccess(status) {
-    this.res.status(status).send({ success: 'success' })
-  }
 
+  /**
+   * Send an exceptionMessage as response.
+   * 
+   * @param {string} exceptionMessage - "exception" Message and not "error" Message,
+   * because only the user can resolve this error, by changing some inputs or settings.
+   */
   sendExceptionMessage(exceptionMessage) {
     this.res.send({ exceptionMessage : exceptionMessage })
   }
@@ -34,4 +36,4 @@ function newErrorMessage(errorMessage) {
   return { errorMessage: errorMessage }
 }
 
-module.exports = ResponseSender
+module.exports = ErrorSender

@@ -6,18 +6,10 @@ function responseResolverOf(vueComponent) {
       }
 
       function resolve(response) {
-        if (response.data.success === 'success') {
+        if (! response.data.exceptionMessage) {
           successBehaviorOf(vueComponent)
         } else {
-          errorBehaviour()
-        }
-
-        function errorBehaviour() {
-          if (response.data.exceptionMessage) {
-            vueComponent.errorMessage = response.data.exceptionMessage
-          } else {
-            vueComponent.errorMessage = 'Internal Server Error: unknown.'
-          }
+          vueComponent.errorMessage = response.data.exceptionMessage
         }
       }
     }
