@@ -6374,6 +6374,10 @@ body {
   width: 100%;
 }
 
+#nim-app, article {
+  text-align: left;
+}
+
 section {
   border-color: #151584 !important;
 }
@@ -6440,10 +6444,6 @@ form {
   text-align: left;
   margin-left: 10%;
   margin-right: 10%;
-}
-
-li::marker {
-  text-align: center !important;
 }
 
 footer {

@@ -38,6 +38,7 @@ body {
 
 #nim-app, article {
   @extend .border-dark;
+  text-align: left;
 }
 
 article, section {
