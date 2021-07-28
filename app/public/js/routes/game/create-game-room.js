@@ -70,12 +70,12 @@ const CreateGameRoom = {
   methods: {
     createGameRoom: function(event) {
       event.preventDefault()
-      axios.get(serverAddress + 'get-user-logged-in')
+      axios.get(getUserLoggedInPath)
         .then((response) => {
           if (response.data.username) {
             const invitePlayerRoomConfiguration = newInvitePlayerRoomConfiguration(this)
             axios.post(serverAddress + 'create-invite-player-room', invitePlayerRoomConfiguration)
-              .then((response) => { goToInvitePlayerRoom(response.data.gameId) })
+              .then((response) => { goToGameRoom(response.data.gameId) })
               .catch((error) => { this.errorMessage = error })
           } else {
             this.errorMessage = 'You must log in before create a game.'
@@ -107,9 +107,9 @@ const CreateGameRoom = {
         }
       }
 
-      function goToInvitePlayerRoom(gameId) {
-        const nextPagePath = invitePlayersRoomPath + '/' + gameId
-        router.push({ path: nextPagePath })
+      function goToGameRoom(gameId) {
+        const newGameRoomPath = gameRoomPath + '/' + gameId
+        router.push({ path: newGameRoomPath })
       }
     },
     goToAccount: function() {

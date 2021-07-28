@@ -1,61 +1,75 @@
 const gameCollection = require('../db_access/game')
-const ResponseSender = require('../services/responseSender')
+const ErrorSender = require('../services/ErrorSender')
 controlGameRoomWithSocketIO()
 
 exports.createInvitePlayerRoom = function(req, res) {
-  const responseSender = new ResponseSender(res)
   const invitePlayerRoomConfiguration = req.body
+  const rows = invitePlayerRoomConfiguration.rows
   const standardVictory = invitePlayerRoomConfiguration.standardVictory
   const turnRotation = invitePlayerRoomConfiguration.turnRotation
-  const rows = invitePlayerRoomConfiguration.rows
-  insertNewInvitePlayerRoomIntoDB(rows, standardVictory, turnRotation)
-  
-  function insertNewInvitePlayerRoomIntoDB(rows, standardVictory, turnRotation) {
-    gameCollection.insertNewInvitePlayerRoom(rows, standardVictory, turnRotation)
-      .then((result) => { res.send({ gameId: result._id }) })
-      .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
-  }
+  gameCollection.insertNewInvitePlayerRoom(rows, standardVictory, turnRotation)
+    .then((result) => {
+      res.send({ gameId: result._id })
+    })
+    .catch((dbError) => { 
+      const errorSender = new ErrorSender(res)
+      errorSender.sendDatabaseError(dbError)
+    })
 }
 
 exports.getGameById = function(req, res) {
-  const responseSender = new ResponseSender(res)
+  const responseSender = new ErrorSender(res)
+  const gameDoesNotExistMessage = "<b>ERROR</b>: this game doesn't exist, you have to create a new one!"
   const gameId = req.body.gameId
-  if (isIdValidForMongoDB(gameId)) {
+  if (isIdentifierValidForMongoDB(gameId)) {
     gameCollection.findGameById(gameId)
-      .then((result) => { res.send({ game: result }) })
+      .then((result) => { sendGame(result) })
       .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
   } else {
-    res.send({ game: null })
+    responseSender.sendExceptionMessage(gameDoesNotExistMessage)
   }
   
-  function isIdValidForMongoDB(id) {
+  function isIdentifierValidForMongoDB(id) {
     return /[0-9A-Fa-f]{24}/.test(id)
+  }
+
+  function sendGame(game) {
+    if (game) {
+      res.status(200).send({ game: game })
+    } else {
+      responseSender.sendExceptionMessage(gameDoesNotExistMessage)
+    }
   }
 }
 
-/////////////////////////////////////////////////////////////////////////
+///// 
 
-exports.createGameRoom = function(req, res) {
-
-  // standard victory
-  function shuffle(array) {
-    var currentIndex = array.length,  randomIndex;
-    // While there remain elements to shuffle...
-    while (0 !== currentIndex) {
-      // Pick a remaining element...
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex--;
-      // And swap it with the current element.
-      [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+exports.updateInvitePlayerRoomToGameRoom = function(req, res) {
+  const responseSender = new ErrorSender(res)
+  const gameId = req.body.gameId
+  const players = shufflePlayerRotation(req.body.players)
+  gameCollection.findGameById(gameId)
+    .then((result) => {
+      const sticks = createSticks(result.sticks[0])
+      gameCollection.updateInvitePlayerRoomToGameRoom(gameId, sticks, players)
+        .then((result) => { res.status(201).send({}) })
+        .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
+    })
+ 
+  function shufflePlayerRotation(player, turnRotation) {
+    if (turnRotation) {
+      var currentIndex = player.length, randomIndex
+      while (0 !== currentIndex) {
+        randomIndex = Math.floor(Math.random() * currentIndex)
+        currentIndex--
+        [player[currentIndex], player[randomIndex]] = [player[randomIndex], player[currentIndex]]
+      }
+      return player
     }
-    return array;
+    return player
   }
 
-  const sticks = createSticks()
-  const playersWithTurnDone = createPlayersWithTurnDone()
-  insertNewGameIntoDB(sticks, standardVictory, turnRotation, playersWithTurnDone)
-
-  function createSticks() {
+  function createSticks(rows) {
     const sticks = []
     for (let row = 0; row < rows; row++) {
       const stickRow = []
@@ -67,20 +81,6 @@ exports.createGameRoom = function(req, res) {
     return sticks
   }
 
-  function createPlayersWithTurnDone() {
-    if (turnRotation) {
-      return Math.floor(Math.random() * players)
-    }
-    return []
-  }
-
-  function insertNewGameIntoDB(sticks, standardVictory, turnRotation, playersWithTurnDone) {
-    gameCollection.insertNewGame(sticks, standardVictory, turnRotation, playersWithTurnDone)
-      .then((result) => { 
-        console.log(result._id);
-        res.send({ gameId: result._id }) })
-      .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
-  }
 }
 
 function controlGameRoomWithSocketIO() {
@@ -97,15 +97,14 @@ function controlGameRoomWithSocketIO() {
     function setupNotifyReceptionOf(socket) {
       socket.on(notify, function(username) {
         io.emit(notify, username)
-        console.log('2 - notify: ' + username + '; event = ' + notify);
+        // console.log('2 - notify: ' + username + '; event = ' + notify);
       })
     }
 
     function setupUpdateReceptionOf(socket) {
       socket.on(update, function(user) {
         io.emit(update, user)
-        console.log('3 - update: ' + user.username 
-            + '; disconnected = ' + user.disconnected + '; event = ' + update);
+        // console.log('3 - update: ' + user.username + '; disconnected = ' + user.disconnected + '; event = ' + update);
       })
     }
 
@@ -116,7 +115,8 @@ function controlGameRoomWithSocketIO() {
           disconnected: true,
         }
         io.emit(update, user)
-        console.log('5 - disconnection: ' + user.username + '; event = ' + update);
+        console.log('all listeners: \n' + socket.listenersAny())
+        // console.log('5 - disconnection: ' + user.username + '; event = ' + update);
       })
     }
 
@@ -125,44 +125,9 @@ function controlGameRoomWithSocketIO() {
       socket.on(gameId, function() {
         socket.removeAllListeners(notify)
         socket.removeAllListeners(update)
-        console.log('all listeners: \n' + socket.listenersAny())
-        // define game listeners
         io.emit(gameId)
+        // console.log('6 - start game: ' + gameId);
       })
     }
-    
-
-    // invia messaggio a tutti i client
-    /*
-    socketIO.emit(gameRoomEvent, 
-      {
-        nickname: "server", content: "Un nuovo utente si è connesso"});
-
-    socket.on('disconnect', function(){
-      console.log('user disconnected');
-    });
-*/
-    /*
-    // invia messaggio a tutti i client
-    io.emit('chat message', { nickname: "server", content: "Un nuovo utente si è connesso"});
-    
-    socket.nickname = "Anonimo";
-  
-    // nickname: ricezione
-    socket.on('change nickname', function(nickname){
-      socket.nickname = nickname;
-    console.log(nickname);
-    }); 
-    
-    // message: ricezione e invio
-    socket.on('chat message', function(msg){
-      io.emit('chat message', { nickname: socket.nickname, content: msg});
-    });
-    
-    // DISCONNESSIONE
-    socket.on('disconnect', function(){
-      console.log('user disconnected');
-    });
-    */
   })
 }

@@ -1,6 +1,6 @@
-function sessionUtilities() {
-  const getUserLoggedInPath = serverAddress + 'get-user-logged-in'
+const getUserLoggedInPath = serverAddress + 'get-user-logged-in'
 
+function sessionUtilities() {
   return {
     setUsernameOf,
     promiseSetUsernameOf,
