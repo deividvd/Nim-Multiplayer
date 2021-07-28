@@ -32,7 +32,7 @@ const CreateGameRoom = {
             <option value="Chaos"> Chaos </option>
           </select>
 
-          <label for="rows"> Rows </label>
+          <label for="rows"> Stick Rows </label>
           <select id="rows" v-model="rows">
             <option value="4"> 4 </option>
             <option value="5"> 5 </option>

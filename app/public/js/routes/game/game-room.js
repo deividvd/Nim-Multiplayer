@@ -32,7 +32,7 @@ const GameRoom = {
         <form>
           <p v-html="gameSettingsMessage"></p>
 
-          <p> Players (Max Number {{ maxPlayerNumber }}): </p>
+          <label> Players (Max Number {{ maxPlayerNumber }}): </label>
           
           <ol>
             <li v-for="player in players">
@@ -99,7 +99,6 @@ const GameRoom = {
             const game = response.data.game
             vueComponent.gameId = game._id
             vueComponent.gameSettingsMessage = newGameSettingsMessage(game)
-            vueComponent.sticks = game.sticks
 
             function newGameSettingsMessage(game) {
               var gameSettingsMessage = '<b>Game Settings</b> <br/> Victory Mode: '
@@ -114,6 +113,7 @@ const GameRoom = {
               } else {
                 gameSettingsMessage = gameSettingsMessage.concat('Chaos')
               }
+              gameSettingsMessage = gameSettingsMessage.concat('<br/> Stick Rows: ' + game.sticks[0])
               return gameSettingsMessage
             }
           }
