@@ -44,7 +44,7 @@ const Login = {
   methods: {
     login: function(event) {
       event.preventDefault()
-      this.errorMessage = gatherErrorMessagesIn(this)
+      this.errorMessage = gatherClientSideErrorsFrom(this)
       if (this.errorMessage === '') {
         const credential = {
           username: this.username,
@@ -52,28 +52,36 @@ const Login = {
         }
         axios.post(serverAddress + 'login', credential)
           .then((response) => {
-            responseResolverOf(this).addSuccessBehavior(successOf).resolve(response)
-
-            function successOf(vueComponent) {
-              twoPageRoutingFrom(vueComponent).addParameters({}).backToPrevious()
+            this.errorMessage = gatherServerSideErrorsFrom(response)
+            if (this.errorMessage === '') {
+              logInSuccessful(this)
             }
           })
 			    .catch((error) => { this.errorMessage = error })
       }
 
-      function gatherErrorMessagesIn(vueComponent) {
+      function gatherClientSideErrorsFrom(vueComponent) {
         const username = vueComponent.username
         const password = vueComponent.password
-        var htmlErrorMessage = ''
+        var errorMessage = ''
         applyMissingInputError()
-        return htmlErrorMessage
+        return errorMessage
 
         function applyMissingInputError() {
-          if (username === '' || password === '') {
-            htmlErrorMessage = 
-                htmlErrorMessage.concat('Please fill in all fields for login.')
-          }
+          if (username === '' || password === '')
+            errorMessage = errorMessage.concat('Please fill in all fields for login.')
         }
+      }
+
+      function gatherServerSideErrorsFrom(response) {
+        if ( ! response.data.login) {
+          return 'Incorrect username or password.'
+        }
+        return ''
+      }
+
+      function logInSuccessful(vueComponent) {
+        twoPageRoutingFrom(vueComponent).addParameters({}).backToPrevious()
       }
     }
   }

@@ -3,16 +3,6 @@ class ErrorSender {
     this.res = res
   }
 
-  /**
-   * Send an exceptionMessage as response.
-   * 
-   * @param {string} exceptionMessage - "exception" Message and not "error" Message,
-   * because only the user can resolve this error, by changing some inputs or settings.
-   */
-  sendExceptionMessage(exceptionMessage) {
-    this.res.send({ exceptionMessage : exceptionMessage })
-  }
-
   sendDatabaseError(dbError) {
     console.log('Database Error:')
     console.log(dbError)

@@ -50,13 +50,23 @@ const Account = {
     logout: function() {
       axios.post(serverAddress + 'logout')
         .then((response) => {
-          responseResolverOf(this).addSuccessBehavior(successOf).resolve(response)
-
-          function successOf(vueComponent) {
-            twoPageRoutingFrom(vueComponent).addParameters({}).backToPrevious()
+          this.errorMessage = gatherServerSideErrorsFrom(response)
+          if (this.errorMessage === '') {
+            logOutSuccessful(this)
           }
         })
         .catch((error) => { this.errorMessage = error })
+      
+      function gatherServerSideErrorsFrom(response) {
+        if ( ! response.data.logout) {
+          return 'You are not logged in. Please reload this page.'
+        }
+        return ''
+      }
+
+      function logOutSuccessful(vueComponent) {
+        twoPageRoutingFrom(vueComponent).addParameters({}).backToPrevious()
+      }
     },
     deleteAccount: function() {
       this.showPermanentlyDelete = true
@@ -64,15 +74,25 @@ const Account = {
     permanentlyDeleteAccount: function() {
       axios.post(serverAddress + 'delete-account')
         .then((response) => {
-          responseResolverOf(this).addSuccessBehavior(successOf).resolve(response)
-
-          function successOf(vueComponent) {
-            const deletionMessage = '): your account has been successfully deleted.'
-            const nextPageParameters = { message: deletionMessage }
-            twoPageRoutingFrom(vueComponent).addParameters(nextPageParameters).backToPrevious()
+          this.errorMessage = gatherServerSideErrorsFrom(response)
+          if (this.errorMessage === '') {
+            deleteAccountSuccessful(this)
           }
         })
         .catch((error) => { this.errorMessage = error })
+
+      function gatherServerSideErrorsFrom(response) {
+        if ( ! response.data.deleteAccount) {
+          return 'Account not found. Please log out or clear your cookies, then try again.'
+        }
+        return ''
+      }
+
+      function deleteAccountSuccessful(vueComponent) {
+        const deletionMessage = '): your account has been successfully deleted.'
+        const nextPageParameters = { message: deletionMessage }
+        twoPageRoutingFrom(vueComponent).addParameters(nextPageParameters).backToPrevious()
+      }
     }
   }
 }

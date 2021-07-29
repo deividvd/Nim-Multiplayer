@@ -1,21 +1,23 @@
 const ErrorSender = require('../services/ErrorSender')
 const usersCollection = require('../db_access/user')
-const RegistrationExceptions = require('../services/user/RegistrationExceptions')
 const passwordEncryption = require('../services/user/passwordEncryption')
-const objectUtilitiesOf = require('../utilities/object')
 
 exports.register = function(req, res) {
   const errorSender = new ErrorSender(res)
   const credentials = req.body
   const email = credentials.email
   const username = credentials.username
+  const response = {
+    emailExists: false,
+    usernameExists: false,
+  }
   promiseFindEmailAndUsernameInDB()
-    .then((results) => {
-      const exceptionMessage = obtainExceptionMessageFrom(results[0], results[1])
-      if (exceptionMessage === '') {
+    .then((emailAndUsername) => {
+      setResponseContentWith(emailAndUsername)
+      if ( ! (response.emailExists || response.usernameExists)) {
         insertNewUserIntoDB()
       } else {
-        errorSender.sendExceptionMessage(exceptionMessage)
+        res.send(response)
       }
     })
     .catch((dbError) => { errorSender.sendDatabaseError(dbError) })
@@ -26,11 +28,13 @@ exports.register = function(req, res) {
     return Promise.all([findUserByEmail, findUserByUsername])
   }
 
-  function obtainExceptionMessageFrom(userHavingTheEmailInserted, userHavingTheUsernameInserted) {
-    const registrationExceptions = new RegistrationExceptions()
-    registrationExceptions.addExistingEmailIfExist(userHavingTheEmailInserted)
-    registrationExceptions.addExistingUsernameIfExist(userHavingTheUsernameInserted)
-    return registrationExceptions.obtainExceptionMessage()
+  function setResponseContentWith(emailAndUsername) {
+    if (emailAndUsername[0]) {
+      response.emailExists = true
+    }
+    if (emailAndUsername[1]) {
+      response.usernameExists = true
+    }
   }
 
   function insertNewUserIntoDB() {
@@ -38,7 +42,7 @@ exports.register = function(req, res) {
     passwordEncryption.encrypt(password)
       .then((hashedPassword) => {
         usersCollection.insertNewUser(username, email, hashedPassword)
-          .then((insertedUser) => { res.sendStatus(201) /* equivalent to res.status(201).send('OK') */ })
+          .then((insertedUser) => { res.status(201).send(response) })
           .catch((dbError) => { errorSender.sendDatabaseError(dbError) })
       })
       .catch((encryptError) => { errorSender.sendEncryptError(encryptError) })
@@ -49,9 +53,10 @@ exports.logIn = function(req, res) {
   const errorSender = new ErrorSender(res)
   const credentials = req.body
   const username = credentials.username
+  const response = { login: true }
   usersCollection.findUserByUsername(username)
     .then((registeredUser) => {
-      if (objectUtilitiesOf(registeredUser).isObjectType()) {
+      if (registeredUser) {
         comparePasswordInsertedWith(registeredUser.password)
           .then((passwordsMatch) => {
             if (passwordsMatch) {
@@ -74,11 +79,12 @@ exports.logIn = function(req, res) {
 
   function logIn() {
     req.session.username = username
-    res.sendStatus(200) /* equivalent to res.status(200).send('OK') */
+    res.send(response)
   }
 
   function sendWrongCredentialsResponse() {
-    errorSender.sendExceptionMessage('Incorrect username or password.')
+    response.login = false
+    res.send(response)
   }
 }
 
@@ -87,38 +93,36 @@ exports.getUserLoggedIn = function(req, res) {
   if (usernameLoggedIn) {
     res.send({ username: usernameLoggedIn })
   } else {
-    res.send({ username: null })
+    res.send({ username: false })
   }
 }
 
 exports.logOut = function(req, res) {
+  const response = { logout: true }
   if (req.session.username) {
-    logOut(req, res)
+    logOut(req, res, response)
   } else {
-    const errorSender = new ErrorSender(res)
-    errorSender.sendExceptionMessage('You are not logged in. Please reload this page.')
+    response.logout = false
+    res.send(response)
   }
 }
 
-function logOut(req, res) {
+function logOut(req, res, response) {
   delete req.session.username
-  res.sendStatus(200) /* equivalent to res.status(200).send('OK') */
+  res.send(response)
 }
 
 exports.deleteAccount = function(req, res) {
   const errorSender = new ErrorSender(res)
   const usernameLoggedIn = req.session.username
+  const response = { deleteAccount: true }
   if (usernameLoggedIn) {
     usersCollection.deleteUserByUsername(usernameLoggedIn)
       .then((deletion) => { // deletion = { n: 1, ok: 1, deletedCount: 1 }
         if (deletion.deletedCount === 1) {
-          logOut(req, res)
+          logOut(req, res, response)
         } else if (deletion.deletedCount === 0) {
           sendAccountNotFoundResponse()
-        } else { // this code should never be reached !!!
-          const errorMessage = 'The username "' + usernameLoggedIn
-            + '" account deletion operation has produced the result: ' + deletion
-          errorSender.sendDatabaseError(errorMessage)
         }
       })
       .catch((dbError) => { errorSender.sendDatabaseError(dbError) })
@@ -127,6 +131,7 @@ exports.deleteAccount = function(req, res) {
   }
 
   function sendAccountNotFoundResponse() {
-    errorSender.sendExceptionMessage('Account not found. Please log out or clear your cookies, then try again.')
+    response.deleteAccount = false
+    res.send(response)
   }
 }

@@ -59,7 +59,7 @@ const Register = {
   methods: {
     register: function(event) {
       event.preventDefault()
-      this.errorMessage = gatherErrorMessagesIn(this)
+      this.errorMessage = gatherClientSideErrorsFrom(this)
       if (this.errorMessage === '') {
         const credential = {
           username: this.username,
@@ -68,74 +68,80 @@ const Register = {
         }
         axios.post(serverAddress + 'register', credential)
           .then((response) => {
-            responseResolverOf(this).addSuccessBehavior(successOf).resolve(response)
-
-            function successOf(vueComponent) {
-              const registrationMessage = 'Congratulations, your account has been successfully created!'
-              const nextPageParameters = { message: registrationMessage }
-              twoPageRoutingFrom(vueComponent).addParameters(nextPageParameters).backToPrevious()
+            this.errorMessage = gatherServerSideErrorsFrom(response)
+            if (this.errorMessage === '') {
+              registrationSuccessful(this)
             }
           })
           .catch((error) => { this.errorMessage = error })
       }
 
-      function gatherErrorMessagesIn(vueComponent) {
+      function gatherClientSideErrorsFrom(vueComponent) {
         const username = vueComponent.username
         const email = vueComponent.email
         const password = vueComponent.password
         const confirmPassword = vueComponent.confirmPassword
         const passwordRequiredLenght = vueComponent.passwordRequiredLenght
-        var htmlErrorMessage = ''
+        var errorMessage = ''
         applyMissingInputError()
         applyPasswordsDoNotMatchError()
         applyPasswordIsShortError()
         applyPasswordDoesntHaveNumberError()
         applyPasswordDoesntHaveUppercaseError()
         applyPasswordDoesntHaveLowercaseError()
-        return htmlErrorMessage
+        return errorMessage
       
         function applyMissingInputError() {
-          if (username === '' || email === '' || password === '' || confirmPassword === '') {
-            htmlErrorMessage = 
-                htmlErrorMessage.concat('Please fill in all fields for register. <br/>')
-          }
+          if (username === '' || email === '' || password === '' || confirmPassword === '')
+            errorMessage = errorMessage.concat('Please fill in all fields for register. <br/>')
         }
       
         function applyPasswordsDoNotMatchError() {
-          if (password != confirmPassword) {
-            htmlErrorMessage = 
-                htmlErrorMessage.concat('The passwords entered do not match. <br/>')
-          }
+          if (password != confirmPassword)
+            errorMessage = errorMessage.concat('The passwords entered do not match. <br/>')
         }
       
         function applyPasswordIsShortError() {
-          if (password.length < passwordRequiredLenght) {
-            htmlErrorMessage = 
-                htmlErrorMessage.concat('The password must be at least '
-                + passwordRequiredLenght + ' characters long. <br/>')
-          }
+          if (password.length < passwordRequiredLenght)
+            errorMessage = errorMessage.concat('The password must be at least ' + passwordRequiredLenght + ' characters long. <br/>')
         }
       
         function applyPasswordDoesntHaveNumberError() {
-          if ( ! (/[1-9]/.test(password))) {
-            htmlErrorMessage = 
-                htmlErrorMessage.concat('The password must contain a number. <br/>')
-          }
+          if ( ! (/[1-9]/.test(password)))
+            errorMessage = errorMessage.concat('The password must contain a number. <br/>')
         }
       
         function applyPasswordDoesntHaveUppercaseError() {
-          if ( ! (/[A-Z]/.test(password))) {
-            htmlErrorMessage = 
-                htmlErrorMessage.concat('The password must contain an uppercase letter. <br/>')
-          }
+          if ( ! (/[A-Z]/.test(password)))
+            errorMessage = errorMessage.concat('The password must contain an uppercase letter. <br/>')
         }
       
         function applyPasswordDoesntHaveLowercaseError() {
-          if ( ! (/[a-z]/.test(password))) {
-            htmlErrorMessage = 
-                htmlErrorMessage.concat('The password must contain a lowercase letter.')
-          }
+          if ( ! (/[a-z]/.test(password)))
+            errorMessage = errorMessage.concat('The password must contain a lowercase letter.')
         }
+      }
+
+      function gatherServerSideErrorsFrom(response) {
+        var errorMessage = ''
+        const emailExists = response.data.emailExists
+        const emailExistMessage = 'The email is already registered.'
+        const usernameExists = response.data.usernameExists
+        const usernameExistsMessage = 'The username is already taken.'
+        if (emailExists && usernameExists) {
+          errorMessage = emailExistMessage.concat(' <br/> ' + usernameExistsMessage)
+        } else if (emailExists) {
+          errorMessage = emailExistMessage
+        } else if (usernameExists) {
+          errorMessage = usernameExistsMessage
+        }
+        return errorMessage
+      }
+
+      function registrationSuccessful(vueComponent) {
+        const registrationMessage = 'Congratulations, your account has been successfully created!'
+        const nextPageParameters = { message: registrationMessage }
+        twoPageRoutingFrom(vueComponent).addParameters(nextPageParameters).backToPrevious()
       }
     }
   }
