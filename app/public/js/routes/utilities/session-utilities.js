@@ -33,7 +33,7 @@ function sessionUtilities() {
   function goHomeIfUserIsLoggedOut(vueComponent) {
     axios.get(getUserLoggedInPath)
       .then((response) => {
-        if (! response.data.username) {
+        if ( ! response.data.username) {
           router.push({ name: HomeRoute.name })
         }
       })

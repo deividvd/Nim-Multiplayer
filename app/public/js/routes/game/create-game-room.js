@@ -72,18 +72,24 @@ const CreateGameRoom = {
       event.preventDefault()
       axios.get(getUserLoggedInPath)
         .then((response) => {
-          if (response.data.username) {
-            const invitePlayerRoomConfiguration = newInvitePlayerRoomConfiguration(this)
-            axios.post(serverAddress + 'create-invite-player-room', invitePlayerRoomConfiguration)
+          this.errorMessage = gatherNotLoggedInErrorFrom(response)
+          if (this.errorMessage === '') {
+            const gameConfiguration = newGameConfigurationFrom(this)
+            axios.post(serverAddress + 'create-game', gameConfiguration)
               .then((response) => { goToGameRoom(response.data.gameId) })
               .catch((error) => { this.errorMessage = error })
-          } else {
-            this.errorMessage = 'You must log in before create a game.'
           }
         })
         .catch((error) => { this.errorMessage = error })
 
-      function newInvitePlayerRoomConfiguration(vueComponent) {
+      function gatherNotLoggedInErrorFrom(response) {
+        if ( ! response.data.username) {
+          return 'You must log in before create a game.'
+        }
+        return ''
+      }
+
+      function newGameConfigurationFrom(vueComponent) {
         const standardVictory = isStandardVictoryOn(vueComponent.victory)
         const turnRotation = isTurnRotationOn(vueComponent.turns)
         return {

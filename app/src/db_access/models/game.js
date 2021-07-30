@@ -16,8 +16,7 @@ module.exports = function(mongoose) {
       playersWithTurnDone: [Schema.Types.Mixed],
       eliminatedPlayer: [Schema.Types.Mixed]
     },
-    { versionKey: false },
-    { strict: false }
+    { versionKey: false }
   )
   return mongoose.model('Game', GameSchema) // 'Game' means 'games' collection
 }

@@ -2,12 +2,13 @@ const gameCollection = require('../db_access/game')
 const ErrorSender = require('../services/ErrorSender')
 controlGameRoomWithSocketIO()
 
-exports.createInvitePlayerRoom = function(req, res) {
-  const invitePlayerRoomConfiguration = req.body
-  const rows = invitePlayerRoomConfiguration.rows
-  const standardVictory = invitePlayerRoomConfiguration.standardVictory
-  const turnRotation = invitePlayerRoomConfiguration.turnRotation
-  gameCollection.insertNewInvitePlayerRoom(rows, standardVictory, turnRotation)
+exports.createGame = function(req, res) {
+  const gameConfiguration = req.body
+  const rows = gameConfiguration.rows
+  const sticks = createSticks(rows)
+  const standardVictory = gameConfiguration.standardVictory
+  const turnRotation = gameConfiguration.turnRotation
+  gameCollection.insertNewGame(sticks, standardVictory, turnRotation)
     .then((result) => {
       res.send({ gameId: result._id })
     })
@@ -15,6 +16,18 @@ exports.createInvitePlayerRoom = function(req, res) {
       const errorSender = new ErrorSender(res)
       errorSender.sendDatabaseError(dbError)
     })
+
+  function createSticks(rows) {
+    const sticks = []
+    for (let row = 0; row < rows; row++) {
+      const stickRow = []
+      for (let stick = 0; stick <= row; stick++) {
+        stickRow.push(true)
+      }
+      sticks.push(stickRow)
+    }
+    return sticks
+  }
 }
 
 exports.getGameById = function(req, res) {
@@ -42,17 +55,21 @@ exports.getGameById = function(req, res) {
   }
 }
 
-///// 
-
-exports.updateInvitePlayerRoomToGameRoom = function(req, res) {
+exports.updateGameWithPlayers = function(req, res) {
   const responseSender = new ErrorSender(res)
   const gameId = req.body.gameId
-  const players = shufflePlayerRotation(req.body.players)
+  var players = req.body.players
   gameCollection.findGameById(gameId)
     .then((result) => {
-      const sticks = createSticks(result.sticks[0])
-      gameCollection.updateInvitePlayerRoomToGameRoom(gameId, sticks, players)
-        .then((result) => { res.status(201).send({}) })
+      players = shufflePlayerRotation(players, result.turnRotation)
+      
+      gameCollection.updateGameWithPlayers(gameId, players)
+        .then((result) => {
+          res.status(201).send({
+            sticks: result.sticks,
+            players: result.players,
+          })
+        })
         .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
     })
  
@@ -68,19 +85,6 @@ exports.updateInvitePlayerRoomToGameRoom = function(req, res) {
     }
     return player
   }
-
-  function createSticks(rows) {
-    const sticks = []
-    for (let row = 0; row < rows; row++) {
-      const stickRow = []
-      for (let stick = 0; stick <= row; stick++) {
-        stickRow.push(true)
-      }
-      sticks.push(stickRow)
-    }
-    return sticks
-  }
-
 }
 
 function controlGameRoomWithSocketIO() {
