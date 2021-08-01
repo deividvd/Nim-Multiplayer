@@ -7,22 +7,31 @@ const GameRoom = {
   `
   <main>
   <section>
-    <div v-if="username && gameId">
-      <div v-if="gameStarted">
+    <div v-if="username && game">
+
+
+      <!-- "play the game" page -->
+
+
+      <div v-if="game.players">
         <h1> Time to play the game! </h1>
 
         <p class="errorMessage">
-          Do <b>NOT REFRESH</b> the page or you will be <b>ELIMINATED </b> from the game.
+          Do <b>NOT REFRESH</b> the page, otherwise you will be <b>ELIMINATED </b> from the game.
         </p>
 
         <p class="errorMessage" v-html="errorMessage"></p>
         
-        <div v-for="stickRow in sticks" class="stick-line">
+        <div v-for="stickRow in game.sticks" class="stick-line">
           <button v-for="stick in stickRow" v-on:click="selectStick(stick)" :disabled="stick.removed" class="stick" type="button">
             <img src="/static/img/single-element.png" alt="a stick" />
           </button>
         </div>
       </div>
+
+
+      <!-- "invite players" page -->
+
 
       <div v-else>
         <h1> Invite other Players! </h1>
@@ -35,7 +44,7 @@ const GameRoom = {
           <label> Players (Max Number {{ maxPlayerNumber }}): </label>
           
           <ol>
-            <li v-for="player in players">
+            <li v-for="player in waitingPlayers">
               {{ player }}
             </li>
           </ol>
@@ -49,192 +58,207 @@ const GameRoom = {
       </div>
     </div>
 
+
+    <!-- "game doesn't exist" or/and "user is not logged in" page-->
+
+
     <div v-else>
       <app-header/>
 
       <p v-html="errorMessage" class="errorMessage"></p>
     </div>
+    
   </section>
   </main>
   `,
   data() {
     return {
+      // "play the game" data:
       username: null,
-      gameId: null,
+      game: null,
+      // "invite players" data:
       gameSettingsMessage: '',
-      gameStarted: false,
       maxPlayerNumber: 6,
-      players: [],
-      sticks: null,
+      waitingPlayers: [],
+      // data shared in all pages:
       errorMessage: '',
       socket: null,
     }
   },
   mounted() {
     const promiseSetUsername = sessionUtilities().promiseSetUsernameOf(this)
-    const gameId = getGameIdFromPathOf(this)
-    const promiseSetGameExist = promiseSetGameSettingsOf(this)
-    Promise.all([promiseSetUsername, promiseSetGameExist])
+    const promiseSetGame = promiseSetGameSettingsOf(this)
+    Promise.all([promiseSetUsername, promiseSetGame])
       .then((results) => {
-        applyNotLoggedInErrorMessageOn(this)
+        this.errorMessage = gatherServerSideErrorsFrom(this)
         if (this.errorMessage === '') {
           connectSocketIO(this)
         }
       })
       .catch((error) => { this.errorMessage = error })
     
-    function getGameIdFromPathOf(vueComponent) {
-      const currentPath = vueComponent.$route.path
-      const resourcesArray = currentPath.split('/')
-      return resourcesArray[ resourcesArray.length - 1 ]
-    }
-
     function promiseSetGameSettingsOf(vueComponent) {
-      const gameIdObject = { gameId: gameId }
+      const gameIdObject = { gameId: getGameIdFromPathOf(vueComponent) }
       return axios.post(serverAddress + 'get-game-by-id', gameIdObject)
         .then((response) => {
-          responseResolverOf(vueComponent).addSuccessBehavior(successOf).resolve(response)
-
-          function successOf(vueComponent) {
-            const game = response.data.game
-            vueComponent.gameId = game._id
+          const game = response.data.game
+          if (game) {
+            vueComponent.game = game
             vueComponent.gameSettingsMessage = newGameSettingsMessage(game)
-
-            function newGameSettingsMessage(game) {
-              var gameSettingsMessage = '<b>Game Settings</b> <br/> Victory Mode: '
-              if (game.standardVictory) {
-                gameSettingsMessage = gameSettingsMessage.concat('Standard')
-              } else {
-                gameSettingsMessage = gameSettingsMessage.concat('Marienbad')
-              }
-              gameSettingsMessage = gameSettingsMessage.concat('<br/> Turns: ')
-              if (game.turnRotation) {
-                gameSettingsMessage = gameSettingsMessage.concat('Rotation')
-              } else {
-                gameSettingsMessage = gameSettingsMessage.concat('Chaos')
-              }
-              gameSettingsMessage = gameSettingsMessage.concat('<br/> Stick Rows: ' + game.sticks[0])
-              return gameSettingsMessage
-            }
           }
         })
         .catch((error) => { vueComponent.errorMessage = error })
-    }
 
-    function applyNotLoggedInErrorMessageOn(vueComponent) {
-      const youMustLogInMessage = '<b>ERROR</b>: you must log in to play.'
-      if ((! vueComponent.gameId) && (! vueComponent.username)) {
-        vueComponent.errorMessage = vueComponent.errorMessage.concat(' <br/> ' + youMustLogInMessage)
-      } else if (! vueComponent.username) {
-        vueComponent.errorMessage = youMustLogInMessage
+      function getGameIdFromPathOf(vueComponent) {
+        const currentPath = vueComponent.$route.path
+        const resourcesArray = currentPath.split('/')
+        return resourcesArray[ resourcesArray.length - 1 ]
       }
-    }
 
-    function connectSocketIO(vueComponent) {
-      const username = vueComponent.username
-      const gameId = vueComponent.gameId
-      const notify = gameId + '- notify user'
-      const update = gameId + '- update user'
-      const connectionOptions = {
-        query: {
-          username: username,
-          notify: notify,
-          update: update,
-          gameId: gameId,
+      function newGameSettingsMessage(game) {
+        var gameSettingsMessage = '<b>Game Settings</b> <br/> Victory Mode: '
+        if (game.standardVictory) {
+          gameSettingsMessage = gameSettingsMessage.concat('Standard')
+        } else {
+          gameSettingsMessage = gameSettingsMessage.concat('Marienbad')
         }
+        gameSettingsMessage = gameSettingsMessage.concat('<br/> Turns: ')
+        if (game.turnRotation) {
+          gameSettingsMessage = gameSettingsMessage.concat('Rotation')
+        } else {
+          gameSettingsMessage = gameSettingsMessage.concat('Chaos')
+        }
+        gameSettingsMessage = gameSettingsMessage.concat('<br/> Stick Rows: ' + game.sticks.length)
+        return gameSettingsMessage
       }
-      const socket = io(serverAddress, connectionOptions)
-      setupStartGameReceptionOf(vueComponent)
-      setupUpdateReceptionOf(vueComponent)
-      setupNotifyReceptionOf(vueComponent)
-      emitNotify()
-      vueComponent.socket = socket
+    }
 
-      function emitNotify() {
-        socket.emit(notify, username)
-        // console.log('1 - notify sent: ' + username);
+    function gatherServerSideErrorsFrom(vueComponent) {
+      var errorMessage = ''
+      const username = vueComponent.username
+      const usernameDoNotExistsMessage = '<b>ERROR</b>: you must log in to play.'
+      const game = vueComponent.game
+      const gameDoNotExistMessage = "<b>ERROR</b>: this game doesn't exist, you have to create a new one!"
+      if (( ! username) && ( ! game)) {
+        errorMessage = usernameDoNotExistsMessage.concat(' <br/> ' + gameDoNotExistMessage)
+      } else if ( ! username) {
+        errorMessage = usernameDoNotExistsMessage
+      } else if ( ! game) {
+        errorMessage = gameDoNotExistMessage
       }
-
-      function setupNotifyReceptionOf(vueComponent) {
-        socket.on(notify, function(username) {
-          // console.log('2 - notify received: ' + username);
-          const user = { username: vueComponent.username }
-          socket.emit(update, user)
-          // console.log('2 - update sent: ' + user.username);
-        })
-      }
-
-      function setupUpdateReceptionOf(vueComponent) {
-        const players = vueComponent.players
-        socket.on(update, function(user) {
-          // console.log('3 - update received: ' + user.username + '; disconnected = ' + user.disconnected);
-          const username = user.username
-          if (! user.disconnected) {
-            if (players.includes(username)) {
-              // console.log('4 - ' + username + ': is already on page');
-            } else {
-              // console.log('4 - ' + 'new username on page: ' + username);
-              players.push(username)
-            }
-          } else {
-            // console.log('5 - ' + username + ': is disconnected' );
-            const usernameIndex = players.indexOf(username);
-            if (usernameIndex !== -1) {
-              players.splice(usernameIndex, 1);
-            }
-          }
-        })
-      }
-
-      function setupStartGameReceptionOf(vueComponent) {
-        const gameId = vueComponent.gameId
-        socket.on(gameId, function() {
-          console.log(vueComponent.socket);
-          // qui c'era router push
-        })
-      }
+      return errorMessage
     }
   },
   methods: {
     startGame: function(event) {
       event.preventDefault()
-      const youCantPlayAloneMessage = "You can't play alone."
-      const maximumPlayerNumberMessage = 'The maximum number of players is 6.'
-      clearAmmisibleExceptionOf(this)
-      axios.get(getUserLoggedInPath)
-        .then((response) => {
-          if (response.data.username) {
-            if (this.players.length <= 1) {
-              this.errorMessage = youCantPlayAloneMessage
-            } else if (this.players.length > this.maxPlayerNumber) {
-              this.errorMessage = maximumPlayerNumberMessage
-            } else {
-              const gameIdAndPlayers = { 
-                gameId: this.gameId,
-                players: this.players,
-              }
-              axios.post(serverAddress + 'update-invite-player-room-to-game-room', gameIdAndPlayers)
-                .then((response) => { this.socket.emit(this.gameId)})
-                .catch((error) => { this.errorMessage = error })
-            }
-          } else {
-            this.errorMessage = 'You must log in before create a game.'
-          }
-        })
-        .catch((error) => { this.errorMessage = error })
-
-      function clearAmmisibleExceptionOf(vueComponent) {
-        if (vueComponent.errorMessage === youCantPlayAloneMessage ||
-            vueComponent.errorMessage === maximumPlayerNumberMessage) {
-          this.errorMessage === ''
+      this.errorMessage = gatherClientSideErrorsFrom(this)
+      if (this.errorMessage === '') {
+        const gameId = this.game._id
+        const waitingPlayers = this.waitingPlayers
+        const gameIdAndWaitingPlayers = { 
+          gameId: gameId,
+          waitingPlayers: waitingPlayers,
         }
+        axios.post(serverAddress + 'update-game-with-players', gameIdAndWaitingPlayers)
+          .then((response) => { this.socket.emit(gameId) })
+          .catch((error) => { this.errorMessage = error })
+      }
+      
+      function gatherClientSideErrorsFrom(vueComponent) {
+        const waitingPlayers = vueComponent.waitingPlayers
+        if (waitingPlayers.length <= 1) {
+          return "You can't play alone."
+        }
+        const maxPlayerNumber = vueComponent.maxPlayerNumber
+        if (waitingPlayers.length > maxPlayerNumber) {
+          return 'The maximum number of players is ' + maxPlayerNumber + '.'
+        }
+        return ''
       }
     },
-
     selectStick: function(stick) {
       console.log("row:" + stick.row + "-number:" + stick.number + "-value:" + stick.value);
       stick.removed = true
       console.log(this.username);
     }
+  }
+}
+
+function connectSocketIO(vueComponent) {
+  const username = vueComponent.username
+  const gameId = vueComponent.game._id
+  const userJoinGameRoom = 'user join game room: ' + gameId
+  const userUpdate = 'update user: ' + gameId
+  const connectionOptions = {
+    query: {
+      username: username,
+      userJoinGameRoom: userJoinGameRoom,
+      userUpdate: userUpdate,
+      gameUpdate: gameId,
+    }
+  }
+  const socket = io(serverAddress, connectionOptions)
+  receiveGameUpdate()
+  receiveUserUpdate()
+  receiveUserJoinGameRoom()
+  emitUserJoinGameRoom()
+  vueComponent.socket = socket
+
+  function emitUserJoinGameRoom() {
+    // console.log('1 - emit: ' + userJoinGameRoom + ' : ' + username);
+    socket.emit(userJoinGameRoom, username)
+  }
+
+  function receiveUserJoinGameRoom() {
+    socket.on(userJoinGameRoom, function(username) {
+      // console.log('2 - receive: ' + userJoinGameRoom + ' : ' + username);
+      const user = { username: vueComponent.username }
+      // console.log('2 - emit: ' + userUpdate + ' : ' + user.username);
+      socket.emit(userUpdate, user)
+    })
+  }
+
+  /**
+   * This function updates only the "vueComponent.waitingPlayers",
+   * so it's change only 
+   * */
+  function receiveUserUpdate() {
+    const waitingPlayers = vueComponent.waitingPlayers
+    socket.on(userUpdate, function(user) {
+      // console.log('3 - receive: ' + userUpdate + ' : ' + user.username + '; disconnected = ' + user.disconnected);
+      const username = user.username
+      if (user.disconnected) {
+        // console.log('5 - ' + username + ': is disconnected' );
+        const usernameIndex = waitingPlayers.indexOf(username);
+        if (usernameIndex !== -1) {
+          waitingPlayers.splice(usernameIndex, 1);
+        }
+      } else {
+        if (waitingPlayers.includes(username)) {
+          // console.log('4 - ' + username + ': is already on page');
+        } else {
+          // console.log('4 - ' + 'new username on page: ' + username);
+          waitingPlayers.push(username)
+        }
+      }
+    })
+  }
+
+  function receiveGameUpdate() {
+    socket.on(gameId, function() {
+      // console.log('6 - game update: ' + gameId);
+      pullTheGameAndRefreshVue()
+
+      function pullTheGameAndRefreshVue() {
+        const gameIdObject = { gameId: vueComponent.game._id }
+        axios.post(serverAddress + 'get-game-by-id', gameIdObject)
+          .then((response) => {
+            vueComponent.game = response.data.game
+            vueComponent.$forceUpdate()
+          })
+          .catch((error) => { vueComponent.errorMessage = error })
+      }
+    })
   }
 }

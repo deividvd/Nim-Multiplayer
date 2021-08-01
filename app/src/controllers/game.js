@@ -1,6 +1,9 @@
 const gameCollection = require('../db_access/game')
 const ErrorSender = require('../services/ErrorSender')
-controlGameRoomWithSocketIO()
+const turnUtilities = require('../services/game/turns/turnUtilities')
+const rotationTurns = require('../services/game/turns/rotation')
+const chaosTurns = require('../services/game/turns/chaos')
+coordinateGameRoomWithSocketIO()
 
 exports.createGame = function(req, res) {
   const gameConfiguration = req.body
@@ -9,8 +12,8 @@ exports.createGame = function(req, res) {
   const standardVictory = gameConfiguration.standardVictory
   const turnRotation = gameConfiguration.turnRotation
   gameCollection.insertNewGame(sticks, standardVictory, turnRotation)
-    .then((result) => {
-      res.send({ gameId: result._id })
+    .then((game) => {
+      res.send({ gameId: game._id })
     })
     .catch((dbError) => { 
       const errorSender = new ErrorSender(res)
@@ -31,15 +34,18 @@ exports.createGame = function(req, res) {
 }
 
 exports.getGameById = function(req, res) {
-  const responseSender = new ErrorSender(res)
-  const gameDoesNotExistMessage = "<b>ERROR</b>: this game doesn't exist, you have to create a new one!"
   const gameId = req.body.gameId
   if (isIdentifierValidForMongoDB(gameId)) {
     gameCollection.findGameById(gameId)
-      .then((result) => { sendGame(result) })
-      .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
+      .then((game) => {
+        sendGame(game)
+      })
+      .catch((dbError) => {
+        const errorSender = new ErrorSender(res)
+        errorSender.sendDatabaseError(dbError)
+      })
   } else {
-    responseSender.sendExceptionMessage(gameDoesNotExistMessage)
+    sendGameDoesntExist()
   }
   
   function isIdentifierValidForMongoDB(id) {
@@ -50,87 +56,94 @@ exports.getGameById = function(req, res) {
     if (game) {
       res.status(200).send({ game: game })
     } else {
-      responseSender.sendExceptionMessage(gameDoesNotExistMessage)
+      sendGameDoesntExist()
     }
+  }
+
+  function sendGameDoesntExist() {
+    res.status(200).send({ game: false })
   }
 }
 
 exports.updateGameWithPlayers = function(req, res) {
-  const responseSender = new ErrorSender(res)
+  const errorSender = new ErrorSender(res)
   const gameId = req.body.gameId
-  var players = req.body.players
+  const players = req.body.waitingPlayers
   gameCollection.findGameById(gameId)
-    .then((result) => {
-      players = shufflePlayerRotation(players, result.turnRotation)
-      
-      gameCollection.updateGameWithPlayers(gameId, players)
-        .then((result) => {
-          res.status(201).send({
-            sticks: result.sticks,
-            players: result.players,
-          })
-        })
-        .catch((dbError) => { responseSender.sendDatabaseError(dbError) })
+    .then((game) => {
+      turnUtilities.shufflePlayers(players)
+      const activePlayer = { player: null }
+      prepareGame(players, activePlayer, game.turnRotation)
+      const playersWithTurnDone = []
+      gameCollection.updateGameWithPlayers(gameId, players, playersWithTurnDone, activePlayer.player)
+        .then((game) => { res.sendStatus(201) /* Equivalent to res.status(201).send('OK')*/ })
+        .catch((dbError) => { errorSender.sendDatabaseError(dbError) })
     })
  
-  function shufflePlayerRotation(player, turnRotation) {
+  function prepareGame(players, activePlayer, turnRotation) {
     if (turnRotation) {
-      var currentIndex = player.length, randomIndex
-      while (0 !== currentIndex) {
-        randomIndex = Math.floor(Math.random() * currentIndex)
-        currentIndex--
-        [player[currentIndex], player[randomIndex]] = [player[randomIndex], player[currentIndex]]
-      }
-      return player
+      rotationTurns.prepareGame(players, activePlayer)
+    } else {
+      chaosTurns.prepareGame(players, activePlayer)
     }
-    return player
   }
 }
 
-function controlGameRoomWithSocketIO() {
-  // 'connection' event = a player join the "invite-player-room"
+function coordinateGameRoomWithSocketIO() {
   io.on('connection', function(socket) {
     socket.username = socket.handshake.query.username
-    const notify = socket.handshake.query.notify
-    const update = socket.handshake.query.update
-    setupStartGame(socket)
-    setupUpdateReceptionOf(socket)
-    setupDisconnectionReceptionOf(socket)
-    setupNotifyReceptionOf(socket)
-
-    function setupNotifyReceptionOf(socket) {
-      socket.on(notify, function(username) {
-        io.emit(notify, username)
-        // console.log('2 - notify: ' + username + '; event = ' + notify);
+    const userJoinGameRoom = socket.handshake.query.userJoinGameRoom
+    const userUpdate = socket.handshake.query.userUpdate
+    receiveUserJoinGameRoom()
+    receiveUserUpdate()
+    receiveGameUpdate()
+    receiveDisconnection()
+    
+    function receiveUserJoinGameRoom() {
+      socket.on(userJoinGameRoom, function(username) {
+        // console.log('1 - emit: ' + userJoinGameRoom + ' : ' + username);
+        io.emit(userJoinGameRoom, username)
       })
     }
 
-    function setupUpdateReceptionOf(socket) {
-      socket.on(update, function(user) {
-        io.emit(update, user)
-        // console.log('3 - update: ' + user.username + '; disconnected = ' + user.disconnected + '; event = ' + update);
+    function receiveUserUpdate() {
+      socket.on(userUpdate, function(user) {
+        // console.log('2 - emit: ' + userUpdate + ' : ' + user.username + '; disconnected = ' + user.disconnected);
+        io.emit(userUpdate, user)
       })
     }
 
-    function setupDisconnectionReceptionOf(socket) {
+    function receiveDisconnection() {
       socket.on('disconnect', function() {
+        // console.log('5 - disconnection: ' + user.username + '; event = ' + update);
+        updateWaitingPlayers()
+        // updateGame()
+      })
+
+      function updateWaitingPlayers() {
         const user = {
           username: socket.username,
           disconnected: true,
         }
-        io.emit(update, user)
-        console.log('all listeners: \n' + socket.listenersAny())
-        // console.log('5 - disconnection: ' + user.username + '; event = ' + update);
-      })
+        io.emit(userUpdate, user)
+      }
+
+      function updateGame() {
+        gameCollection.findGameById(updateGame)
+          // .then(result)
+
+        const usernameIndex = waitingPlayers.indexOf(username);
+        if (usernameIndex !== -1) {
+          waitingPlayers.splice(usernameIndex, 1);
+        }
+      }
     }
 
-    function setupStartGame(socket) {
-      const gameId = socket.handshake.query.gameId
-      socket.on(gameId, function() {
-        socket.removeAllListeners(notify)
-        socket.removeAllListeners(update)
-        io.emit(gameId)
-        // console.log('6 - start game: ' + gameId);
+    function receiveGameUpdate() {
+      const gameUpdate = socket.handshake.query.gameUpdate
+      socket.on(gameUpdate, function() {
+        // console.log('6 - game update: ' + gameId);
+        io.emit(gameUpdate)
       })
     }
   })
