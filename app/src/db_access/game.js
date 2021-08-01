@@ -8,16 +8,22 @@ exports.insertNewGame = function(sticks, standardVictory, turnRotation) {
       sticks: sticks,
       standardVictory: standardVictory,
       turnRotation: turnRotation,
+      players: null,
+      playersWithTurnDone: null,
+      activePlayer: null,
+      eliminatedPlayer: null,
     }
   )
   return newGame.save()
 }
 
-exports.updateGameWithPlayers = function(id, players, playersWithTurnDone) {
+exports.updateGameWithPlayers = function(id, players, playersWithTurnDone, activePlayer) {
   return Game.findByIdAndUpdate(id, 
     {
       players: players,
       playersWithTurnDone: playersWithTurnDone,
+      activePlayer: activePlayer,
+      eliminatedPlayer: [],
     }
   ).lean()
 }
