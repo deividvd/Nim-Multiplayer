@@ -3,8 +3,8 @@ module.exports = function(mongoose) {
   const GameSchema = new Schema(
     {
       sticks: [Schema.Types.Mixed],
-      standardVictory: Boolean,
-      turnRotation: Boolean,
+      standardVictory: Boolean, // true = Standard victory / false = Marienbad victory
+      turnRotation: Boolean, // true = rotation turns / false = chaos turns
       players: [Schema.Types.Mixed],
       playersWithTurnDone: [Schema.Types.Mixed],
       activePlayer: String,

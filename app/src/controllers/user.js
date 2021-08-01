@@ -1,7 +1,15 @@
+/* This controller has the responsibilities of managing everything that concerns
+ * the user data: persistence data and session data. */
+
 const ErrorSender = require('../services/ErrorSender')
 const usersCollection = require('../db_access/user')
 const passwordEncryption = require('../services/user/passwordEncryption')
 
+/**
+ * POST request with body: registration credentials.
+ * 
+ * A new user registers: his credentials are inserted in the database.
+ */
 exports.register = function(req, res) {
   const errorSender = new ErrorSender(res)
   const credentials = req.body
@@ -49,6 +57,11 @@ exports.register = function(req, res) {
   }
 }
 
+/**
+ * POST request with body: login credentials.
+ * 
+ * A registered user logs in: his username is added to the session.
+ */
 exports.logIn = function(req, res) {
   const errorSender = new ErrorSender(res)
   const credentials = req.body
@@ -88,6 +101,11 @@ exports.logIn = function(req, res) {
   }
 }
 
+/**
+ * GET request.
+ * 
+ * Sends the username that is logged in the session. 
+ */
 exports.getUserLoggedIn = function(req, res) {
   const usernameLoggedIn = req.session.username
   if (usernameLoggedIn) {
@@ -97,6 +115,11 @@ exports.getUserLoggedIn = function(req, res) {
   }
 }
 
+/**
+ * POST request with body: empty.
+ * 
+ * Delete the username that is logged in the session. 
+ */
 exports.logOut = function(req, res) {
   const response = { logout: true }
   if (req.session.username) {
@@ -112,6 +135,12 @@ function logOut(req, res, response) {
   res.send(response)
 }
 
+/**
+ * POST request with body: empty.
+ * 
+ * Delete: the username that is logged in the session,
+ * and his credentials saved in the database.
+ */
 exports.deleteAccount = function(req, res) {
   const errorSender = new ErrorSender(res)
   const usernameLoggedIn = req.session.username

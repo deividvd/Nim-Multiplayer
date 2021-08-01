@@ -1,3 +1,9 @@
+/**
+ * This class must be the unique entry point for sending errors to the client.
+ * 
+ * In this way, error sending is encapsulated in this class,
+ * and it's easy to keep it consistent in all the application code.
+ */
 class ErrorSender {
   constructor(res) {
     this.res = res
