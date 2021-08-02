@@ -17,7 +17,7 @@ const UserSection = {
   `,
   data() {
     return {
-      username: null,
+      username: null, // the user logged in
       errorMessage: '',
     }
   },
