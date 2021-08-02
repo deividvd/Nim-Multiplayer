@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const game = require('./models/game')
 const GameModel = require('./models/game')
 const Game = GameModel(mongoose)
 
@@ -11,7 +12,7 @@ exports.insertNewGame = function(sticks, standardVictory, turnRotation) {
       players: null,
       playersWithTurnDone: null,
       activePlayer: null,
-      eliminatedPlayer: null,
+      eliminatedPlayers: null,
     }
   )
   return newGame.save()
@@ -23,7 +24,7 @@ exports.updateGameWithPlayers = function(id, players, playersWithTurnDone, activ
       players: players,
       playersWithTurnDone: playersWithTurnDone,
       activePlayer: activePlayer,
-      eliminatedPlayer: [],
+      eliminatedPlayers: [],
     }
   ).lean()
 }
@@ -34,4 +35,8 @@ exports.deleteGameById = function(id) {
 
 exports.findGameById = function(id) {
   return Game.findById(id).lean()
+}
+
+exports.findGameDocumentById = function(id) {
+  return Game.findById(id)
 }

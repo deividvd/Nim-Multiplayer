@@ -8,7 +8,7 @@ module.exports = function(mongoose) {
       players: [Schema.Types.Mixed],
       playersWithTurnDone: [Schema.Types.Mixed],
       activePlayer: String,
-      eliminatedPlayer: [Schema.Types.Mixed]
+      eliminatedPlayers: [Schema.Types.Mixed]
     },
     { versionKey: false }
   )

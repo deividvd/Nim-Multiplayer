@@ -76,7 +76,7 @@ exports.updateGameWithPlayers = function(req, res) {
       prepareGame(players, activePlayer, game.turnRotation)
       const playersWithTurnDone = []
       gameCollection.updateGameWithPlayers(gameId, players, playersWithTurnDone, activePlayer.player)
-        .then((game) => { res.sendStatus(201) /* Equivalent to res.status(201).send('OK')*/ })
+        .then((game) => { res.sendStatus(201) /* equivalent to res.status(201).send('OK')*/ })
         .catch((dbError) => { errorSender.sendDatabaseError(dbError) })
     })
  
@@ -91,59 +91,75 @@ exports.updateGameWithPlayers = function(req, res) {
 
 function coordinateGameRoomWithSocketIO() {
   io.on('connection', function(socket) {
-    socket.username = socket.handshake.query.username
+    const username = socket.handshake.query.username
+    socket.username = username
     const userJoinGameRoom = socket.handshake.query.userJoinGameRoom
     const userUpdate = socket.handshake.query.userUpdate
-    receiveUserJoinGameRoom()
-    receiveUserUpdate()
-    receiveGameUpdate()
-    receiveDisconnection()
-    
-    function receiveUserJoinGameRoom() {
-      socket.on(userJoinGameRoom, function(username) {
-        // console.log('1 - emit: ' + userJoinGameRoom + ' : ' + username);
-        io.emit(userJoinGameRoom, username)
-      })
-    }
+    const gameId = socket.handshake.query.gameId
 
-    function receiveUserUpdate() {
-      socket.on(userUpdate, function(user) {
-        // console.log('2 - emit: ' + userUpdate + ' : ' + user.username + '; disconnected = ' + user.disconnected);
-        io.emit(userUpdate, user)
-      })
+    invitePlayersEvents()
+    receiveDisconnection()
+    receiveGameUpdate()
+    
+    function invitePlayersEvents() {
+      receiveUserJoinGameRoom()
+      receiveUserUpdate()
+      receiveStartGame()
+
+      function receiveUserJoinGameRoom() {
+        socket.on(userJoinGameRoom, function(username) {
+          // console.log('1 - emit: ' + userJoinGameRoom + ' : ' + username);
+          io.emit(userJoinGameRoom, username)
+        })
+      }
+
+      function receiveUserUpdate() {
+        socket.on(userUpdate, function(user) {
+          // console.log('2 - emit: ' + userUpdate + ' : ' + user.username + '; disconnected = ' + user.disconnected);
+          io.emit(userUpdate, user)
+        })
+      }
+
+      function receiveStartGame() {
+        const startGame = socket.handshake.query.startGame
+        socket.on(startGame, function() {
+          // console.log('6 - ' + startGame);
+          io.emit(startGame)
+        })
+      }
     }
 
     function receiveDisconnection() {
       socket.on('disconnect', function() {
         // console.log('5 - disconnection: ' + user.username + '; event = ' + update);
         updateWaitingPlayers()
-        // updateGame()
+        updateGameIfIsStarted()
       })
 
       function updateWaitingPlayers() {
         const user = {
-          username: socket.username,
+          username: username,
           disconnected: true,
         }
         io.emit(userUpdate, user)
       }
 
-      function updateGame() {
-        gameCollection.findGameById(updateGame)
-          // .then(result)
-
-        const usernameIndex = waitingPlayers.indexOf(username);
-        if (usernameIndex !== -1) {
-          waitingPlayers.splice(usernameIndex, 1);
-        }
+      function updateGameIfIsStarted() {
+        gameCollection.findGameDocumentById(gameId)
+          .then((gameDocument) => {
+            if (gameDocument.players) { // if a game contains players, then is started
+              gameDocument.eliminatedPlayers.push(username)
+              gameDocument.save()
+            }
+          })
+          .catch((dbError) => { errorSender.sendDatabaseError(dbError) })
       }
     }
 
     function receiveGameUpdate() {
-      const gameUpdate = socket.handshake.query.gameUpdate
-      socket.on(gameUpdate, function() {
+      socket.on(gameId, function() {
         // console.log('6 - game update: ' + gameId);
-        io.emit(gameUpdate)
+        io.emit(gameId)
       })
     }
   })

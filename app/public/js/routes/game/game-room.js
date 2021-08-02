@@ -188,7 +188,7 @@ const GameRoom = {
           waitingPlayers: waitingPlayers,
         }
         axios.post(serverAddress + 'update-game-with-players', gameIdAndWaitingPlayers)
-          .then((response) => { this.socket.emit(gameId) })
+          .then((response) => { this.socket.emit('start game: ' + gameId) })
           .catch((error) => { this.errorMessage = error })
       }
       
@@ -220,60 +220,80 @@ function connectSocketIO(vueComponent) {
   const gameId = vueComponent.game._id
   const userJoinGameRoom = 'user join game room: ' + gameId
   const userUpdate = 'update user: ' + gameId
+  const startGame = 'start game: ' + gameId
   const connectionOptions = {
     query: {
       username: username,
       userJoinGameRoom: userJoinGameRoom,
       userUpdate: userUpdate,
-      gameUpdate: gameId,
+      startGame: startGame,
+      gameId: gameId,
     }
   }
   const socket = io(serverAddress, connectionOptions)
+  invitePlayersEvents()
   receiveGameUpdate()
-  receiveUserUpdate()
-  receiveUserJoinGameRoom()
-  emitUserJoinGameRoom()
+  // console.log('1 - emit: ' + userJoinGameRoom + ' : ' + username);
+  socket.emit(userJoinGameRoom, username)
   vueComponent.socket = socket
 
-  function emitUserJoinGameRoom() {
-    // console.log('1 - emit: ' + userJoinGameRoom + ' : ' + username);
-    socket.emit(userJoinGameRoom, username)
-  }
+  function invitePlayersEvents() {
+    receiveUserJoinGameRoom()
+    receiveUserUpdate()
+    receiveStartGame()
+    
+    function receiveUserJoinGameRoom() {
+      socket.on(userJoinGameRoom, function(username) {
+        // console.log('2 - receive: ' + userJoinGameRoom + ' : ' + username);
+        const user = { username: vueComponent.username }
+        // console.log('2 - emit: ' + userUpdate + ' : ' + user.username);
+        socket.emit(userUpdate, user)
+      })
+    }
 
-  function receiveUserJoinGameRoom() {
-    socket.on(userJoinGameRoom, function(username) {
-      // console.log('2 - receive: ' + userJoinGameRoom + ' : ' + username);
-      const user = { username: vueComponent.username }
-      // console.log('2 - emit: ' + userUpdate + ' : ' + user.username);
-      socket.emit(userUpdate, user)
-    })
-  }
-
-  /**
-   * This function updates only the "vueComponent.waitingPlayers",
-   * so it's change only 
-   * */
-  function receiveUserUpdate() {
-    const waitingPlayers = vueComponent.waitingPlayers
-    socket.on(userUpdate, function(user) {
-      // console.log('3 - receive: ' + userUpdate + ' : ' + user.username + '; disconnected = ' + user.disconnected);
-      const username = user.username
-      if (user.disconnected) {
-        // console.log('5 - ' + username + ': is disconnected' );
-        const usernameIndex = waitingPlayers.indexOf(username);
-        if (usernameIndex !== -1) {
-          waitingPlayers.splice(usernameIndex, 1);
-        }
-      } else {
-        if (waitingPlayers.includes(username)) {
-          // console.log('4 - ' + username + ': is already on page');
+    function receiveUserUpdate() {
+      const waitingPlayers = vueComponent.waitingPlayers
+      socket.on(userUpdate, function(user) {
+        // console.log('3 - receive: ' + userUpdate + ' : ' + user.username + '; disconnected = ' + user.disconnected);
+        const username = user.username
+        if (user.disconnected) {
+          // console.log('5 - ' + username + ': is disconnected' );
+          const usernameIndex = waitingPlayers.indexOf(username);
+          if (usernameIndex !== -1) {
+            waitingPlayers.splice(usernameIndex, 1);
+          }
         } else {
-          // console.log('4 - ' + 'new username on page: ' + username);
-          waitingPlayers.push(username)
+          if (waitingPlayers.includes(username)) {
+            // console.log('4 - ' + username + ': is already on page');
+          } else {
+            // console.log('4 - ' + 'new username on page: ' + username);
+            waitingPlayers.push(username)
+          }
         }
-      }
-    })
+      })
+    }
+
+    function receiveStartGame() {
+      socket.on(startGame, function() {
+        // console.log('6 - ' + startGame);
+        pullTheGameAndRefreshVue()
+      })
+    }
   }
+
+  function pullTheGameAndRefreshVue() {
+    const gameIdObject = { gameId: vueComponent.game._id }
+    axios.post(serverAddress + 'get-game-by-id', gameIdObject)
+      .then((response) => {
+        vueComponent.game = response.data.game
+        vueComponent.$forceUpdate()
+      })
+      .catch((error) => { vueComponent.errorMessage = error })
+  }
+
+  
+
+  
 
   function receiveGameUpdate() {
     socket.on(gameId, function() {
