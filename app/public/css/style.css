@@ -1931,7 +1931,7 @@ textarea.form-control-lg {
   transform: translateY(-50%) !important;
 }
 
-.border, #nim-app, article, section {
+.border, .information, #nim-app, article, section {
   border: 1px solid #dee2e6 !important;
 }
 
@@ -2015,7 +2015,7 @@ textarea.form-control-lg {
   border-width: 2px !important;
 }
 
-.border-3 {
+.border-3, .information {
   border-width: 3px !important;
 }
 
@@ -2291,7 +2291,7 @@ textarea.form-control-lg {
   margin: 0 !important;
 }
 
-.m-1, button {
+.m-1, .information, button {
   margin: 0.25rem !important;
 }
 
@@ -2501,7 +2501,7 @@ textarea.form-control-lg {
   padding: 0 !important;
 }
 
-.p-1, button {
+.p-1, .information, button {
   padding: 0.25rem !important;
 }
 
@@ -2940,7 +2940,7 @@ textarea.form-control-lg {
   border-radius: 0.25rem !important;
 }
 
-.rounded-3, .errorMessage, #nim-app, article, section {
+.rounded-3, .information, .errorMessage, #nim-app, article, section {
   border-radius: 0.3rem !important;
 }
 
@@ -6400,6 +6400,11 @@ img {
   width: 100%;
 }
 
+ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
 .errorMessage {
   padding-left: 1%;
   padding-right: 1%;
@@ -6470,6 +6475,28 @@ hr {
   background-color: black;
 }
 
+#gameInformations {
+  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.information {
+  border-color: #151584 !important;
+}
+
+@media (max-width: 768px) {
+  .information {
+    font-size: 0.9rem;
+  }
+}
+#removeSticks {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
 .stick-line {
   width: 100%;
   display: flex;
@@ -6503,11 +6530,13 @@ hr {
     max-height: 140px;
   }
 }
+/*
 @media (min-width: 992px) {
   .stick {
     max-width: 52px;
     max-height: 195px;
   }
 }
+*/
 
 /*# sourceMappingURL=style.css.map */

@@ -69,6 +69,11 @@ img {
   width: 100%;
 }
 
+ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
 .errorMessage {
   @extend .rounded-3;
   @extend .m-4;

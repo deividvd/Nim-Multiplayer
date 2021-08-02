@@ -6,19 +6,46 @@ const GameRoom = {
   template:
   `
   <main>
-  <section>
     <div v-if="username && game">
 
 
-      <!-- "play the game" page -->
+      <!-- "play the game" section -->
 
 
-      <div v-if="game.players">
+      <section v-if="game.players">
         <h1> Time to play the game! </h1>
 
-        <p class="errorMessage">
-          Do <b>NOT REFRESH</b> the page, otherwise you will be <b>ELIMINATED </b> from the game.
+        <p class="information">
+            Do <b>NOT REFRESH</b> the page, otherwise you will be <b>ELIMINATED </b> from the game.
         </p>
+
+        <div id="gameInformations">
+          <div v-if="isUsernameInPlayers()" class="information" v-bind:class="{ activePlayer: activePlayer }">
+            <p>
+              playing as 
+              <br/>
+              <b>{{ username }}</b>
+            </p>
+          </div>
+          <div v-else class="information">
+            <p>
+              watching as
+              <br/>
+              <b>{{ username }}</b>
+            </p>
+          </div>
+
+          <div class="information">
+            <label> Player List: </label>
+            <ul>
+              <li v-for="player in game.players">
+                {{ player }}
+              </li>
+            </ul>
+          </div>
+
+          <button id="removeSticks"> REMOVE STICKS </button>
+        </div>
 
         <p class="errorMessage" v-html="errorMessage"></p>
         
@@ -27,13 +54,13 @@ const GameRoom = {
             <img src="/static/img/single-element.png" alt="a stick" />
           </button>
         </div>
-      </div>
+      </section>
 
 
-      <!-- "invite players" page -->
+      <!-- "invite players" section -->
 
 
-      <div v-else>
+      <section v-else>
         <h1> Invite other Players! </h1>
 
         <p> Copy and link the URL of this page to invite other players! </p>
@@ -56,31 +83,31 @@ const GameRoom = {
 
         <how-to-play/>
       </div>
-    </div>
+    </section>
 
 
-    <!-- "game doesn't exist" or/and "user is not logged in" page-->
+    <!-- "game doesn't exist" or/and "user is not logged in" section -->
 
 
-    <div v-else>
+    <section v-else>
       <app-header/>
 
       <p v-html="errorMessage" class="errorMessage"></p>
-    </div>
+    </section>
     
-  </section>
   </main>
   `,
   data() {
     return {
       // "play the game" data:
-      username: null,
+      username: null, // the user logged in
+      activePlayer: false,
       game: null,
       // "invite players" data:
       gameSettingsMessage: '',
       maxPlayerNumber: 6,
       waitingPlayers: [],
-      // data shared in all pages:
+      // data shared in all sections:
       errorMessage: '',
       socket: null,
     }
@@ -136,7 +163,7 @@ const GameRoom = {
     function gatherServerSideErrorsFrom(vueComponent) {
       var errorMessage = ''
       const username = vueComponent.username
-      const usernameDoNotExistsMessage = '<b>ERROR</b>: you must log in to play.'
+      const usernameDoNotExistsMessage = '<b>ERROR</b>: you must log in to play or watch a game.'
       const game = vueComponent.game
       const gameDoNotExistMessage = "<b>ERROR</b>: this game doesn't exist, you have to create a new one!"
       if (( ! username) && ( ! game)) {
@@ -176,6 +203,9 @@ const GameRoom = {
         }
         return ''
       }
+    },
+    isUsernameInPlayers: function() {
+      return this.game.players.includes(this.username)
     },
     selectStick: function(stick) {
       console.log("row:" + stick.row + "-number:" + stick.number + "-value:" + stick.value);

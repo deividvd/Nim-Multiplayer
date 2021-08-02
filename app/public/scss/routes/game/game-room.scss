@@ -1,3 +1,32 @@
+#gameInformations {
+  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.information {
+  @extend .border;
+  @extend .rounded-3;
+  @extend .border-3;
+  @extend .p-1;
+  @extend .m-1;
+  border-color: $blue !important;
+}
+
+// the font size of (game) informations needs to be resized in small devices ( < tablets)
+@media (max-width: 768px) {
+  .information {
+    font-size: 0.9rem;
+  }
+}
+
+#removeSticks {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
 .stick-line {
   width: 100%;
   display: flex;
@@ -13,12 +42,12 @@
 
 /* stick dimension in extra small devices (portrait phones),
    if screen-width is under 440px: the last stick row renderization is ugly */
-   @media (min-width: 0px) { 
-    .stick {
-      max-width: 20px;
-      max-height: 75px;
-    } 
-  }
+@media (min-width: 0px) {
+  .stick {
+    max-width: 20px;
+    max-height: 75px;
+  } 
+}
 // stick dimension in small devices (landscape phones)
 @media (min-width: 576px) {
   .stick {
@@ -34,9 +63,11 @@
   }
 }
 // stick dimension in large devices (desktops)
+/*
 @media (min-width: 992px) {
   .stick {
     max-width: 52px;
     max-height: 195px;
   }
 }
+*/
