@@ -18,11 +18,13 @@ exports.register = function(req, res) {
   const response = {
     emailExists: false,
     usernameExists: false,
+    usernameExceedsMaxLenght: false,
   }
   promiseFindEmailAndUsernameInDB()
     .then((emailAndUsername) => {
       setResponseContentWith(emailAndUsername)
-      if ( ! (response.emailExists || response.usernameExists)) {
+      setResponseContentWithMaxUsernameLenght()
+      if ( ! (response.emailExists || response.usernameExists || response.usernameExceedsMaxLenght)) {
         insertNewUserIntoDB()
       } else {
         res.send(response)
@@ -42,6 +44,12 @@ exports.register = function(req, res) {
     }
     if (emailAndUsername[1]) {
       response.usernameExists = true
+    }
+  }
+
+  function setResponseContentWithMaxUsernameLenght() {
+    if (username.length > 16) {
+      response.usernameExceedsMaxLenght = true
     }
   }
 

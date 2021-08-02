@@ -128,12 +128,24 @@ const Register = {
         const emailExistMessage = 'The email is already registered.'
         const usernameExists = response.data.usernameExists
         const usernameExistsMessage = 'The username is already taken.'
-        if (emailExists && usernameExists) {
-          errorMessage = emailExistMessage.concat(' <br/> ' + usernameExistsMessage)
-        } else if (emailExists) {
+        const usernameExceedsMaxLenght = response.data.usernameExceedsMaxLenght
+        const usernameExceedsMaxLenghtMessage = 'The username must be at maximum 12 characters long.'
+        if (emailExists) {
           errorMessage = emailExistMessage
-        } else if (usernameExists) {
-          errorMessage = usernameExistsMessage
+        } 
+        if (usernameExists) {
+          if (errorMessage === '') {
+            errorMessage = usernameExistsMessage
+          } else {
+            errorMessage = errorMessage.concat(' <br/> ' + usernameExistsMessage)
+          }
+        }
+        if (usernameExceedsMaxLenght) {
+          if (errorMessage === '') {
+            errorMessage = usernameExceedsMaxLenghtMessage
+          } else {
+            errorMessage = errorMessage.concat(' <br/> ' + usernameExceedsMaxLenghtMessage)
+          }
         }
         return errorMessage
       }
