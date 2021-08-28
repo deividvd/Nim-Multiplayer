@@ -19,38 +19,49 @@ const GameRoom = {
             Do <b>NOT REFRESH</b> the page, otherwise you will be <b>ELIMINATED </b> from the game.
         </p>
 
-        <div id="gameInformations">
-          <div v-if="isUsernameInPlayers()" class="information" v-bind:class="{ activePlayer: activePlayer }">
+        <div id="game-information">
+          <div v-if="isUsernameInPlayers()" class="information">
             <p>
               playing as 
               <br/>
-              <b>{{ username }}</b>
+              {{ username }}
             </p>
           </div>
           <div v-else class="information">
             <p>
               watching as
               <br/>
-              <b>{{ username }}</b>
+              {{ username }}
             </p>
           </div>
 
           <div class="information">
             <label> Player List: </label>
             <ul>
-              <li v-for="player in game.players">
+              <li v-for="player in game.players"
+                  v-bind:class="{ activePlayer: activePlayerEqualsTo(player) }"
+              >
                 {{ player }}
               </li>
             </ul>
           </div>
 
-          <button id="removeSticks"> REMOVE STICKS </button>
+          <button v-if="isUsernameInPlayers()"
+                  :disabled="usernameIsNotTheActivePlayer()"
+                  id="remove-sticks-btn" v-on:click="removeSelectedSticks()"
+          >
+            REMOVE STICKS
+          </button>
         </div>
 
         <p class="errorMessage" v-html="errorMessage"></p>
         
-        <div v-for="stickRow in game.sticks" class="stick-line">
-          <button v-for="stick in stickRow" v-on:click="selectStick(stick)" :disabled="stick.removed" class="stick" type="button">
+        <div v-for="stickRow in sticksWithMetadata" class="stick-row">
+          <button v-for="stick in stickRow"
+                  :disabled="stick.removed"
+                  v-bind:class="{ activeStick: ! stick.selected, selectedStick: stick.selected }"
+                  class="stick" type="button" v-on:click="selectStick(stick)"
+          >
             <img src="/static/img/single-element.png" alt="a stick" />
           </button>
         </div>
@@ -71,14 +82,14 @@ const GameRoom = {
           <label> Players (Max Number {{ maxPlayerNumber }}): </label>
           
           <ol>
-            <li v-for="player in waitingPlayers">
+            <li v-for="player in playersWaitingForGameStart">
               {{ player }}
             </li>
           </ol>
 
           <p v-html="errorMessage" class="errorMessage"></p>
 
-          <button v-on:click="startGame" type="submit"> Start Game! </button>
+          <button type="submit" v-on:click="startGame"> Start Game! </button>
         </form>
 
         <how-to-play/>
@@ -101,13 +112,14 @@ const GameRoom = {
     return {
       // "play the game" data:
       username: null, // the user logged in
-      activePlayer: false,
       game: null,
+      sticksWithMetadata: [[], []],
       // "invite players" data:
       gameSettingsMessage: '',
       maxPlayerNumber: 6,
-      waitingPlayers: [],
-      // data shared in all sections:
+      playersWaitingForGameStart: [],
+      startGameMessage: 'start game: ',
+      // data shared in both sections:
       errorMessage: '',
       socket: null,
     }
@@ -182,23 +194,23 @@ const GameRoom = {
       this.errorMessage = gatherClientSideErrorsFrom(this)
       if (this.errorMessage === '') {
         const gameId = this.game._id
-        const waitingPlayers = this.waitingPlayers
-        const gameIdAndWaitingPlayers = { 
+        const playersWaitingForGameStart = this.playersWaitingForGameStart
+        const gameIdAndPlayers = { 
           gameId: gameId,
-          waitingPlayers: waitingPlayers,
+          playersWaitingForGameStart: playersWaitingForGameStart,
         }
-        axios.post(serverAddress + 'update-game-with-players', gameIdAndWaitingPlayers)
-          .then((response) => { this.socket.emit('start game: ' + gameId) })
+        axios.post(serverAddress + 'update-game-with-players', gameIdAndPlayers)
+          .then((response) => { this.socket.emit(this.startGameMessage + gameId) })
           .catch((error) => { this.errorMessage = error })
       }
       
       function gatherClientSideErrorsFrom(vueComponent) {
-        const waitingPlayers = vueComponent.waitingPlayers
-        if (waitingPlayers.length <= 1) {
+        const playersWaitingForGameStart = vueComponent.playersWaitingForGameStart
+        if (playersWaitingForGameStart.length <= 1) {
           return "You can't play alone."
         }
         const maxPlayerNumber = vueComponent.maxPlayerNumber
-        if (waitingPlayers.length > maxPlayerNumber) {
+        if (playersWaitingForGameStart.length > maxPlayerNumber) {
           return 'The maximum number of players is ' + maxPlayerNumber + '.'
         }
         return ''
@@ -207,10 +219,49 @@ const GameRoom = {
     isUsernameInPlayers: function() {
       return this.game.players.includes(this.username)
     },
+    activePlayerEqualsTo: function(player) {
+      return this.game.activePlayer === player
+    },
+    usernameIsNotTheActivePlayer: function() {
+      return this.game.activePlayer !== this.username
+    },
+    updateSticksWithMetadata: function() {
+      const sticksWithMetadata = []
+      let row = 1
+      for (let stickRow of this.game.sticks) {
+        const stickRowWithMetadata = []
+        let stickNumber = 1
+        for (let stickValue of stickRow) {
+          let stick
+          if (stickValue) {
+            stick = {
+              row: row,
+              number: stickNumber,
+              value: stickValue,
+              selected: false,
+              removed: false
+            }
+          } else {
+            stick = {
+              removed: true
+            }
+          }
+          stickRowWithMetadata.push(stick)
+          stickNumber++
+        }
+        sticksWithMetadata.push(stickRowWithMetadata)
+        row++
+      }
+      this.sticksWithMetadata = sticksWithMetadata
+      console.log(this.sticksWithMetadata);
+    },
     selectStick: function(stick) {
       console.log("row:" + stick.row + "-number:" + stick.number + "-value:" + stick.value);
-      stick.removed = true
+      stick.selected = ! stick.selected
       console.log(this.username);
+    },
+    removeSelectedSticks: function() {
+
     }
   }
 }
@@ -219,66 +270,63 @@ function connectSocketIO(vueComponent) {
   const username = vueComponent.username
   const gameId = vueComponent.game._id
   const userJoinGameRoom = 'user join game room: ' + gameId
-  const userUpdate = 'update user: ' + gameId
-  const startGame = 'start game: ' + gameId
+  const userUpdate = 'user update: ' + gameId
+  const startGame = vueComponent.startGameMessage + gameId
   const connectionOptions = {
     query: {
       username: username,
       userJoinGameRoom: userJoinGameRoom,
       userUpdate: userUpdate,
       startGame: startGame,
-      gameId: gameId,
+      gameUpdate: gameId,
     }
   }
   const socket = io(serverAddress, connectionOptions)
-  invitePlayersEvents()
+  receiveUserJoinGameRoom()
+  receiveUserUpdate()
+  receiveStartGame()
   receiveGameUpdate()
   // console.log('1 - emit: ' + userJoinGameRoom + ' : ' + username);
   socket.emit(userJoinGameRoom, username)
   vueComponent.socket = socket
 
-  function invitePlayersEvents() {
-    receiveUserJoinGameRoom()
-    receiveUserUpdate()
-    receiveStartGame()
-    
-    function receiveUserJoinGameRoom() {
-      socket.on(userJoinGameRoom, function(username) {
-        // console.log('2 - receive: ' + userJoinGameRoom + ' : ' + username);
-        const user = { username: vueComponent.username }
-        // console.log('2 - emit: ' + userUpdate + ' : ' + user.username);
-        socket.emit(userUpdate, user)
-      })
-    }
+  function receiveUserJoinGameRoom() {
+    socket.on(userJoinGameRoom, function(username) {
+      // console.log('2 - receive: ' + userJoinGameRoom + ' : ' + username);
+      const user = { username: vueComponent.username }
+      // console.log('2 - emit: ' + userUpdate + ' : ' + user.username);
+      socket.emit(userUpdate, user)
+    })
+  }
 
-    function receiveUserUpdate() {
-      const waitingPlayers = vueComponent.waitingPlayers
-      socket.on(userUpdate, function(user) {
-        // console.log('3 - receive: ' + userUpdate + ' : ' + user.username + '; disconnected = ' + user.disconnected);
-        const username = user.username
-        if (user.disconnected) {
-          // console.log('5 - ' + username + ': is disconnected' );
-          const usernameIndex = waitingPlayers.indexOf(username);
-          if (usernameIndex !== -1) {
-            waitingPlayers.splice(usernameIndex, 1);
-          }
-        } else {
-          if (waitingPlayers.includes(username)) {
-            // console.log('4 - ' + username + ': is already on page');
-          } else {
-            // console.log('4 - ' + 'new username on page: ' + username);
-            waitingPlayers.push(username)
-          }
+  function receiveUserUpdate() {
+    const playersWaitingForGameStart = vueComponent.playersWaitingForGameStart
+    socket.on(userUpdate, function(user) {
+      // console.log('3 - receive: ' + userUpdate + ' : ' + user.username + '; disconnected = ' + user.disconnected);
+      const username = user.username
+      if (user.disconnected) {
+        // console.log('5 - ' + username + ': is disconnected' );
+        const usernameIndex = playersWaitingForGameStart.indexOf(username);
+        if (usernameIndex !== -1) {
+          playersWaitingForGameStart.splice(usernameIndex, 1);
         }
-      })
-    }
+      } else {
+        if (playersWaitingForGameStart.includes(username)) {
+          // console.log('4 - ' + username + ': is already on page');
+        } else {
+          // console.log('4 - ' + 'new username on page: ' + username);
+          playersWaitingForGameStart.push(username)
+        }
+      }
+    })
+  }
 
-    function receiveStartGame() {
-      socket.on(startGame, function() {
-        // console.log('6 - ' + startGame);
-        pullTheGameAndRefreshVue()
-      })
-    }
+  function receiveStartGame() {
+    socket.on(startGame, function() {
+      // console.log('6 - ' + startGame);
+      vueComponent.errorMessage = ''
+      pullTheGameAndRefreshVue()
+    })
   }
 
   function pullTheGameAndRefreshVue() {
@@ -286,29 +334,16 @@ function connectSocketIO(vueComponent) {
     axios.post(serverAddress + 'get-game-by-id', gameIdObject)
       .then((response) => {
         vueComponent.game = response.data.game
+        vueComponent.updateSticksWithMetadata()
         vueComponent.$forceUpdate()
       })
       .catch((error) => { vueComponent.errorMessage = error })
   }
 
-  
-
-  
-
   function receiveGameUpdate() {
     socket.on(gameId, function() {
-      // console.log('6 - game update: ' + gameId);
+      // console.log('7 - game update: ' + gameId);
       pullTheGameAndRefreshVue()
-
-      function pullTheGameAndRefreshVue() {
-        const gameIdObject = { gameId: vueComponent.game._id }
-        axios.post(serverAddress + 'get-game-by-id', gameIdObject)
-          .then((response) => {
-            vueComponent.game = response.data.game
-            vueComponent.$forceUpdate()
-          })
-          .catch((error) => { vueComponent.errorMessage = error })
-      }
     })
   }
 }

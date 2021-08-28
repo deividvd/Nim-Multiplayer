@@ -1931,7 +1931,7 @@ textarea.form-control-lg {
   transform: translateY(-50%) !important;
 }
 
-.border, .information, #nim-app, article, section {
+.border, .activePlayer, .information, #nim-app, article, section {
   border: 1px solid #dee2e6 !important;
 }
 
@@ -2015,7 +2015,7 @@ textarea.form-control-lg {
   border-width: 2px !important;
 }
 
-.border-3, .information {
+.border-3, .activePlayer, .information {
   border-width: 3px !important;
 }
 
@@ -2940,7 +2940,7 @@ textarea.form-control-lg {
   border-radius: 0.25rem !important;
 }
 
-.rounded-3, .information, .errorMessage, #nim-app, article, section {
+.rounded-3, .activePlayer, .information, .errorMessage, #nim-app, article, section {
   border-radius: 0.3rem !important;
 }
 
@@ -6475,7 +6475,7 @@ hr {
   background-color: black;
 }
 
-#gameInformations {
+#game-information {
   width: 100%;
   display: flex;
   flex-wrap: nowrap;
@@ -6492,17 +6492,35 @@ hr {
     font-size: 0.9rem;
   }
 }
-#removeSticks {
+#remove-sticks-btn {
   margin-left: 0 !important;
   margin-right: 0 !important;
 }
 
-.stick-line {
+/* N.B.: the name 'active-player'
+   doesn't work in 'v-bind:class="{ active-player: expression}" */
+.activePlayer {
+  border-color: #FF6300 !important;
+}
+
+.stick-row {
   width: 100%;
   display: flex;
   flex-wrap: nowrap;
   flex-direction: row;
   justify-content: center;
+}
+
+/* N.B.: the name 'active-stick'
+   doesn't work in 'v-bind:class="{ active-stick: expression}" */
+/* N.B.: the name 'selected-stick'
+   doesn't work in 'v-bind:class="{ selected-stick: expression}" */
+.selectedStick {
+  background-color: #151584;
+}
+
+.selectedStick:focus {
+  background-color: #151584;
 }
 
 .stick {

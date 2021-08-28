@@ -1,4 +1,4 @@
-#gameInformations {
+#game-information {
   width: 100%;
   display: flex;
   flex-wrap: nowrap;
@@ -22,17 +22,39 @@
   }
 }
 
-#removeSticks {
+#remove-sticks-btn {
   margin-left: 0 !important;
   margin-right: 0 !important;
 }
 
-.stick-line {
+/* N.B.: the name 'active-player'
+   doesn't work in 'v-bind:class="{ active-player: expression}" */
+.activePlayer {
+  @extend .border;
+  @extend .rounded-3;
+  @extend .border-3;
+  border-color: $errorColor !important;
+}
+
+.stick-row {
   width: 100%;
   display: flex;
   flex-wrap: nowrap;
   flex-direction: row;
   justify-content: center;
+}
+
+/* N.B.: the name 'active-stick'
+   doesn't work in 'v-bind:class="{ active-stick: expression}" */
+.activeStick {}
+
+/* N.B.: the name 'selected-stick'
+   doesn't work in 'v-bind:class="{ selected-stick: expression}" */
+.selectedStick {
+  background-color: $blue;
+}
+.selectedStick:focus {
+  background-color: $blue;
 }
 
 .stick {

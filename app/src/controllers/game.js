@@ -68,7 +68,7 @@ exports.getGameById = function(req, res) {
 exports.updateGameWithPlayers = function(req, res) {
   const errorSender = new ErrorSender(res)
   const gameId = req.body.gameId
-  const players = req.body.waitingPlayers
+  const players = req.body.playersWaitingForGameStart
   gameCollection.findGameById(gameId)
     .then((game) => {
       turnUtilities.shufflePlayers(players)
@@ -95,48 +95,50 @@ function coordinateGameRoomWithSocketIO() {
     socket.username = username
     const userJoinGameRoom = socket.handshake.query.userJoinGameRoom
     const userUpdate = socket.handshake.query.userUpdate
-    const gameId = socket.handshake.query.gameId
+    const gameUpdate = socket.handshake.query.gameUpdate
+    propagateUserJoinGameRoom()
+    propagateUserUpdate()
+    propagateStartGame()
+    propagateGameUpdate()
+    propagateDisconnection()
 
-    invitePlayersEvents()
-    receiveDisconnection()
-    receiveGameUpdate()
-    
-    function invitePlayersEvents() {
-      receiveUserJoinGameRoom()
-      receiveUserUpdate()
-      receiveStartGame()
-
-      function receiveUserJoinGameRoom() {
-        socket.on(userJoinGameRoom, function(username) {
-          // console.log('1 - emit: ' + userJoinGameRoom + ' : ' + username);
-          io.emit(userJoinGameRoom, username)
-        })
-      }
-
-      function receiveUserUpdate() {
-        socket.on(userUpdate, function(user) {
-          // console.log('2 - emit: ' + userUpdate + ' : ' + user.username + '; disconnected = ' + user.disconnected);
-          io.emit(userUpdate, user)
-        })
-      }
-
-      function receiveStartGame() {
-        const startGame = socket.handshake.query.startGame
-        socket.on(startGame, function() {
-          // console.log('6 - ' + startGame);
-          io.emit(startGame)
-        })
-      }
+    function propagateUserJoinGameRoom() {
+      socket.on(userJoinGameRoom, function(username) {
+        // console.log('1 - emit: ' + userJoinGameRoom + ' : ' + username);
+        io.emit(userJoinGameRoom, username)
+      })
     }
 
-    function receiveDisconnection() {
+    function propagateUserUpdate() {
+      socket.on(userUpdate, function(user) {
+        // console.log('2 - emit: ' + userUpdate + ' : ' + user.username + '; disconnected = ' + user.disconnected);
+        io.emit(userUpdate, user)
+      })
+    }
+
+    function propagateStartGame() {
+      const startGame = socket.handshake.query.startGame
+      socket.on(startGame, function() {
+        // console.log('6 - ' + startGame);
+        io.emit(startGame)
+      })
+    }
+
+    function propagateGameUpdate() {
+      socket.on(gameUpdate, function(removedSticks) {
+        // console.log('7 - move received' + removedSticks);
+        io.emit(gameUpdate)
+      })
+    }
+
+    function propagateDisconnection() {
       socket.on('disconnect', function() {
         // console.log('5 - disconnection: ' + user.username + '; event = ' + update);
-        updateWaitingPlayers()
-        updateGameIfIsStarted()
+        updatePlayersWaitingForGameStart()
+        // updateGameWithDisconnectionOf(socket.username)
       })
 
-      function updateWaitingPlayers() {
+      function updatePlayersWaitingForGameStart() {
         const user = {
           username: username,
           disconnected: true,
@@ -144,23 +146,33 @@ function coordinateGameRoomWithSocketIO() {
         io.emit(userUpdate, user)
       }
 
-      function updateGameIfIsStarted() {
-        gameCollection.findGameDocumentById(gameId)
+      function updateGameWithDisconnectionOf(username) {
+        gameCollection.findGameDocumentById(gameUpdate)
           .then((gameDocument) => {
-            if (gameDocument.players) { // if a game contains players, then is started
+            const players = gameDocument.players
+            if (players) { // if a game contains players, then it's started
+              if (gameDocument.activePlayer === username) {
+
+              } else {
+                const activePlayerIndex = players.indexOf(activePlayer)
+                if (index > -1) {
+                  gameDocument.players.splice(activePlayerIndex, 1)
+                }
+              }
+              if (gameDocument.standardVictory) {
+                io.emit(startGame)
+              } else {
+                // TODO
+              }
+            }
+            
+            if (gameDocument.players) { 
               gameDocument.eliminatedPlayers.push(username)
               gameDocument.save()
             }
           })
           .catch((dbError) => { errorSender.sendDatabaseError(dbError) })
       }
-    }
-
-    function receiveGameUpdate() {
-      socket.on(gameId, function() {
-        // console.log('6 - game update: ' + gameId);
-        io.emit(gameId)
-      })
     }
   })
 }
