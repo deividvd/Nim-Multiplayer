@@ -31,16 +31,12 @@ function twoPageRoutingFrom(vueComponent) {
 
       function backToPrevious() {
         const previousRouteName = vueComponent.$route.params.previousRouteName
-        if (stringUtilitiesOf(previousRouteName).isStringType()) {
-          switch (previousRouteName) {
-            case CreateGameRoomRoute.name:
-              backTo(CreateGameRoomRoute.name)
-              break
-            default:
-              backTo(HomeRoute.name)
-          }
-        } else {
-          backTo(HomeRoute.name)
+        switch (previousRouteName) {
+          case CreateGameRoomRoute.name:
+            backTo(CreateGameRoomRoute.name)
+            break
+          default:
+            backTo(HomeRoute.name)
         }
 
         function backTo(previousRouteName) {

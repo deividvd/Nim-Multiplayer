@@ -1,14 +1,14 @@
 /* This controller has the responsibilities of managing everything that concerns
- * the user data: persistence data and session data. */
+ * the user: database data and session data. */
 
 const ErrorSender = require('../services/ErrorSender')
 const usersCollection = require('../db_access/user')
 const passwordEncryption = require('../services/user/passwordEncryption')
 
 /**
- * POST request with body: registration credentials.
+ * POST request with registration credentials in its body.
  * 
- * A new user registers: his credentials are inserted in the database.
+ * A new user inserts his credentials into the database.
  */
 exports.register = function(req, res) {
   const errorSender = new ErrorSender(res)
@@ -48,7 +48,7 @@ exports.register = function(req, res) {
   }
 
   function setResponseContentWithMaxUsernameLenght() {
-    if (username.length > 16) {
+    if (username.length >= 16) {
       response.usernameExceedsMaxLenght = true
     }
   }
@@ -66,7 +66,7 @@ exports.register = function(req, res) {
 }
 
 /**
- * POST request with body: login credentials.
+ * POST request with login credentials in its body.
  * 
  * A registered user logs in: his username is added to the session.
  */
@@ -112,19 +112,19 @@ exports.logIn = function(req, res) {
 /**
  * GET request.
  * 
- * Sends the username that is logged in the session. 
+ * Send the username that is logged in the session. 
  */
 exports.getUserLoggedIn = function(req, res) {
   const usernameLoggedIn = req.session.username
   if (usernameLoggedIn) {
     res.send({ username: usernameLoggedIn })
   } else {
-    res.send({ username: false })
+    res.send({ username: null })
   }
 }
 
 /**
- * POST request with body: empty.
+ * POST request with empty body.
  * 
  * Delete the username that is logged in the session. 
  */
@@ -144,10 +144,10 @@ function logOut(req, res, response) {
 }
 
 /**
- * POST request with body: empty.
+ * POST request with empty body.
  * 
  * Delete: the username that is logged in the session,
- * and his credentials saved in the database.
+ * and his credentials stored in the database.
  */
 exports.deleteAccount = function(req, res) {
   const errorSender = new ErrorSender(res)

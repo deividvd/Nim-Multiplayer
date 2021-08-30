@@ -1,3 +1,8 @@
+/*
+  the file containing the entire Bootstrap library (version 5.0.2)
+  @import '../../node_modules/bootstrap/scss/bootstrap.scss';
+  the following imports are a subset of the imports contained in this file:
+*/
 :root {
   --bs-blue: #0d6efd;
   --bs-indigo: #6610f2;
@@ -2303,7 +2308,7 @@ textarea.form-control-lg {
   margin: 1rem !important;
 }
 
-.m-4, .errorMessage {
+.m-4, .error-message {
   margin: 1.5rem !important;
 }
 
@@ -2940,7 +2945,7 @@ textarea.form-control-lg {
   border-radius: 0.25rem !important;
 }
 
-.rounded-3, .activePlayer, .information, .errorMessage, #nim-app, article, section {
+.rounded-3, .activePlayer, .information, .error-message, #nim-app, article, section {
   border-radius: 0.3rem !important;
 }
 
@@ -6405,7 +6410,7 @@ ul {
   padding-left: 0;
 }
 
-.errorMessage {
+.error-message {
   padding-left: 1%;
   padding-right: 1%;
   background-color: #FF6300;
@@ -6511,8 +6516,8 @@ hr {
   justify-content: center;
 }
 
-/* N.B.: the name 'active-stick'
-   doesn't work in 'v-bind:class="{ active-stick: expression}" */
+/* N.B.: the name 'not-selected-stick'
+   doesn't work in 'v-bind:class="{ not-selected-stick: expression}" */
 /* N.B.: the name 'selected-stick'
    doesn't work in 'v-bind:class="{ selected-stick: expression}" */
 .selectedStick {
@@ -6548,13 +6553,5 @@ hr {
     max-height: 140px;
   }
 }
-/*
-@media (min-width: 992px) {
-  .stick {
-    max-width: 52px;
-    max-height: 195px;
-  }
-}
-*/
 
 /*# sourceMappingURL=style.css.map */

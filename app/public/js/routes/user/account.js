@@ -15,7 +15,7 @@ const Account = {
       <section>
         <p> Logged as: {{ username }} </p>
 
-        <p v-html="errorMessage" class="errorMessage"></p>
+        <p v-html="errorMessage" class="error-message"></p>
 
         <button v-on:click="logout"> Sign out </button>
       

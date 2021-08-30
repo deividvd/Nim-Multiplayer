@@ -48,7 +48,7 @@ const CreateGameRoom = {
             <option value="15"> 15 </option>
           </select>
         
-          <p v-html="errorMessage" class="errorMessage"></p>
+          <p v-html="errorMessage" class="error-message"></p>
           
           <button v-on:click="createGameRoom" type="submit"> CREATE GAME ROOM </button>
         </form>
@@ -72,7 +72,7 @@ const CreateGameRoom = {
       event.preventDefault()
       axios.get(getUserLoggedInPath)
         .then((response) => {
-          this.errorMessage = gatherNotLoggedInErrorFrom(response)
+          this.errorMessage = gatherServerSideErrorsFrom(response)
           if (this.errorMessage === '') {
             const gameConfiguration = newGameConfigurationFrom(this)
             axios.post(serverAddress + 'create-game', gameConfiguration)
@@ -82,7 +82,7 @@ const CreateGameRoom = {
         })
         .catch((error) => { this.errorMessage = error })
 
-      function gatherNotLoggedInErrorFrom(response) {
+      function gatherServerSideErrorsFrom(response) {
         if ( ! response.data.username) {
           return 'You must log in before create a game.'
         }

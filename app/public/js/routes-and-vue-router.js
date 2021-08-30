@@ -7,6 +7,7 @@ const HomeRoute = {
 }
 
 // user data routes
+
 const RegisterRoute = {
   path: '/register',
   name: 'Register',
@@ -24,6 +25,7 @@ const AccountRoute = {
 }
 
 // game routes
+
 const CreateGameRoomRoute = {
   path: '/create-game-room',
   name: 'CreateGameRoom',

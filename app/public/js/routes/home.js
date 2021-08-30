@@ -22,7 +22,7 @@ const Home = {
 
     <how-to-play/>
 
-    <footer id="informativeLinks">
+    <footer>
       <router-link to="/terms-of-service"> TERMS OF SERVICE </router-link>
       <hr/>
       <router-link to="/privacy"> PRIVACY </router-link>

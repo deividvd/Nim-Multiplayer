@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const game = require('./models/game')
 const GameModel = require('./models/game')
 const Game = GameModel(mongoose)
 

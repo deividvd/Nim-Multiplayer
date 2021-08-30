@@ -49,12 +49,12 @@ const GameRoom = {
         </button>
       </div>
 
-      <p class="errorMessage" v-html="errorMessage"></p>
+      <p v-html="errorMessage" class="error-message"></p>
         
       <div v-for="stickRow in sticksWithMetadata" class="stick-row">
         <button v-for="stick in stickRow"
                 :disabled="stick.removed"
-                v-bind:class="{ activeStick: ! stick.selected, selectedStick: stick.selected }"
+                v-bind:class="{ notSelectedStick: ! stick.selected, selectedStick: stick.selected }"
                 class="stick" type="button" v-on:click="selectStick(stick)"
         >
           <img src="/static/img/single-element.png" alt="a stick" />
@@ -82,7 +82,7 @@ const GameRoom = {
           </li>
         </ol>
 
-        <p v-html="errorMessage" class="errorMessage"></p>
+        <p v-html="errorMessage" class="error-message"></p>
 
         <button type="submit" v-on:click="startGame"> Start Game! </button>
       </form>
@@ -100,7 +100,7 @@ const GameRoom = {
     <section v-if="! username || ! game || (game.players && ! isUsernameInGame() )">
       <app-header/>
 
-      <p v-html="errorMessage" class="errorMessage"></p>
+      <p v-html="errorMessage" class="error-message"></p>
     </section>
     
   </main>

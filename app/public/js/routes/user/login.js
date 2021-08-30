@@ -22,7 +22,7 @@ const Login = {
           <label for="password"> Password </label>
           <input id="password" v-model="password" type="password" placeholder="Enter Password" />
           
-          <p v-html="errorMessage" class="errorMessage"></p>
+          <p v-html="errorMessage" class="error-message"></p>
 
           <button v-on:click="login" type="submit"> Sign in </button>
         </form>

@@ -34,7 +34,7 @@ const Register = {
             including a number, a lowercase and an uppercase letter.
           </p>
 
-          <p v-html="errorMessage" class="errorMessage"></p>
+          <p v-html="errorMessage" class="error-message"></p>
           
           <button v-on:click="register" type="submit"> Sign up </button>
         </form>
@@ -129,7 +129,7 @@ const Register = {
         const usernameExists = response.data.usernameExists
         const usernameExistsMessage = 'The username is already taken.'
         const usernameExceedsMaxLenght = response.data.usernameExceedsMaxLenght
-        const usernameExceedsMaxLenghtMessage = 'The username must be at maximum 12 characters long.'
+        const usernameExceedsMaxLenghtMessage = 'The username must be at maximum 16 characters long.'
         if (emailExists) {
           errorMessage = emailExistMessage
         } 

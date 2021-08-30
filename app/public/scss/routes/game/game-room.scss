@@ -15,7 +15,7 @@
   border-color: $blue !important;
 }
 
-// the font size of (game) informations needs to be resized in small devices ( < tablets)
+// the font size of a (game) information needs to be resized in small devices ( < tablets)
 @media (max-width: 768px) {
   .information {
     font-size: 0.9rem;
@@ -44,9 +44,9 @@
   justify-content: center;
 }
 
-/* N.B.: the name 'active-stick'
-   doesn't work in 'v-bind:class="{ active-stick: expression}" */
-.activeStick {}
+/* N.B.: the name 'not-selected-stick'
+   doesn't work in 'v-bind:class="{ not-selected-stick: expression}" */
+.notSelectedStick {}
 
 /* N.B.: the name 'selected-stick'
    doesn't work in 'v-bind:class="{ selected-stick: expression}" */
@@ -84,12 +84,3 @@
     max-height: 140px;
   }
 }
-// stick dimension in large devices (desktops)
-/*
-@media (min-width: 992px) {
-  .stick {
-    max-width: 52px;
-    max-height: 195px;
-  }
-}
-*/
