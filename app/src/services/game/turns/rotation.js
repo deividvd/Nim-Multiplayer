@@ -1,12 +1,13 @@
-exports.prepareGame = function(players, activePlayer) {
-  activePlayer.player = players[0]
+exports.setActivePlayerForNewGame = function(activePlayerObj, players) {
+  activePlayerObj.player = players[0]
 }
 
-exports.nextTurn = function(players, activePlayer) {
-  const activePlayerIndex = players.indexOf(activePlayer)
+exports.nextTurn = function(game) {
+  const players = game.players
+  const activePlayerIndex = players.indexOf(game.activePlayer)
   if (activePlayerIndex === (players.length - 1)) {
-    activePlayer = players[0]
+    game.activePlayer = players[0]
   } else {
-    activePlayer = players[activePlayerIndex + 1]
+    game.activePlayer = players[activePlayerIndex + 1]
   }
 }

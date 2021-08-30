@@ -1,21 +1,20 @@
-exports.prepareGame = function(players, activePlayer) {
-  setRandomActivePlayer(players, activePlayer)
+exports.setActivePlayerForNewGame = function(activePlayerObj, players) {
+  activePlayerObj.player = getRandomPlayerFrom(players)
 }
 
-exports.nextTurn = function(players, playersWithTurnDone, activePlayer) {
-  playersWithTurnDone.push(activePlayer)
-  const activePlayerIndex = players.indexOf(activePlayer)
-  players.splice(activePlayerIndex, 1)
-  if (players.length === 0) {
-    players = [...playersWithTurnDone]
-    playersWithTurnDone = []
-    setRandomActivePlayer(players, activePlayer)
-  } else {
-    setRandomActivePlayer(players, activePlayer)
+exports.nextTurn = function(game) {
+  const activePlayer = game.activePlayer
+  game.playersWithTurnDone.push(activePlayer)
+  const activePlayerIndex = game.players.indexOf(activePlayer)
+  game.players.splice(activePlayerIndex, 1)
+  if (game.players.length === 0) {
+    game.players = [...game.playersWithTurnDone]
+    game.playersWithTurnDone = []
   }
+  game.activePlayer = getRandomPlayerFrom(game.players)
 }
 
-function setRandomActivePlayer(players, activePlayer) {
+function getRandomPlayerFrom(players) {
   const randomIndex = Math.floor(Math.random() * players.length)
-  activePlayer.player = players[randomIndex]
+  return players[randomIndex]
 }

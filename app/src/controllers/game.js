@@ -1,10 +1,18 @@
+/* This controller has the responsibilities of managing everything that concerns
+ * the game: database data and the real time communication. */
+
 const gameCollection = require('../db_access/game')
 const ErrorSender = require('../services/ErrorSender')
-const turnUtilities = require('../services/game/turns/turnUtilities')
+const shufflePlayers = require('../services/game/turns/utilities/shufflePlayers')
 const rotationTurns = require('../services/game/turns/rotation')
 const chaosTurns = require('../services/game/turns/chaos')
 coordinateGameRoomWithSocketIO()
 
+/**
+ * POST request with a game configuration in its body.
+ * 
+ * A user inserts a new game (without any player) into the database.
+ */
 exports.createGame = function(req, res) {
   const gameConfiguration = req.body
   const rows = gameConfiguration.rows
@@ -25,7 +33,7 @@ exports.createGame = function(req, res) {
     for (let row = 0; row < rows; row++) {
       const stickRow = []
       for (let stick = 0; stick <= row; stick++) {
-        stickRow.push(true)
+        stickRow.push(false)
       }
       sticks.push(stickRow)
     }
@@ -33,6 +41,11 @@ exports.createGame = function(req, res) {
   }
 }
 
+/**
+ * POST request with a game id in its body.
+ * 
+ * Send the corresponding game.
+ */
 exports.getGameById = function(req, res) {
   const gameId = req.body.gameId
   if (isIdentifierValidForMongoDB(gameId)) {
@@ -61,31 +74,7 @@ exports.getGameById = function(req, res) {
   }
 
   function sendGameDoesntExist() {
-    res.status(200).send({ game: false })
-  }
-}
-
-exports.updateGameWithPlayers = function(req, res) {
-  const errorSender = new ErrorSender(res)
-  const gameId = req.body.gameId
-  const players = req.body.playersWaitingForGameStart
-  gameCollection.findGameById(gameId)
-    .then((game) => {
-      turnUtilities.shufflePlayers(players)
-      const activePlayer = { player: null }
-      prepareGame(players, activePlayer, game.turnRotation)
-      const playersWithTurnDone = []
-      gameCollection.updateGameWithPlayers(gameId, players, playersWithTurnDone, activePlayer.player)
-        .then((game) => { res.sendStatus(201) /* equivalent to res.status(201).send('OK')*/ })
-        .catch((dbError) => { errorSender.sendDatabaseError(dbError) })
-    })
- 
-  function prepareGame(players, activePlayer, turnRotation) {
-    if (turnRotation) {
-      rotationTurns.prepareGame(players, activePlayer)
-    } else {
-      chaosTurns.prepareGame(players, activePlayer)
-    }
+    res.status(200).send({ game: null })
   }
 }
 
@@ -95,11 +84,12 @@ function coordinateGameRoomWithSocketIO() {
     socket.username = username
     const userJoinGameRoom = socket.handshake.query.userJoinGameRoom
     const userUpdate = socket.handshake.query.userUpdate
-    const gameUpdate = socket.handshake.query.gameUpdate
+    const startGame = socket.handshake.query.startGame
+    const gameId = socket.handshake.query.gameId
     propagateUserJoinGameRoom()
     propagateUserUpdate()
-    propagateStartGame()
-    propagateGameUpdate()
+    receiveStartGame()
+    receiveGameMove()
     propagateDisconnection()
 
     function propagateUserJoinGameRoom() {
@@ -116,24 +106,75 @@ function coordinateGameRoomWithSocketIO() {
       })
     }
 
-    function propagateStartGame() {
-      const startGame = socket.handshake.query.startGame
-      socket.on(startGame, function() {
-        // console.log('6 - ' + startGame);
-        io.emit(startGame)
+    function receiveStartGame() {
+      socket.on(startGame, function(playersWaitingForGameStart) {
+        // console.log('4 - ' + startGame);
+        const gameId = startGame.substring(7) // substring(7) because it must remove 'start: '
+        const players = playersWaitingForGameStart
+        gameCollection.findGameById(gameId)
+          .then((game) => {
+            shufflePlayers.shuffle(players)
+            const activePlayerObj = { player: null }
+            setActivePlayerForNewGame(game.turnRotation, activePlayerObj, players)
+            const playersWithTurnDone = []
+            gameCollection.updateGameWithPlayers(gameId, players, playersWithTurnDone, activePlayerObj.player)
+              .then((game) => { io.emit(startGame, game) })
+          })
+ 
+        function setActivePlayerForNewGame(turnRotation, activePlayerObj, players) {
+          if (turnRotation) {
+            rotationTurns.setActivePlayerForNewGame(activePlayerObj, players)
+          } else {
+            chaosTurns.setActivePlayerForNewGame(activePlayerObj, players)
+          }
+        }
       })
     }
 
-    function propagateGameUpdate() {
-      socket.on(gameUpdate, function(removedSticks) {
-        // console.log('7 - move received' + removedSticks);
-        io.emit(gameUpdate)
+    function receiveGameMove() {
+      socket.on(gameId, function(move) {
+        // console.log('5 - move received from ' + move.username);
+        // console.log(move.selectedSticks);
+        gameCollection.findGameDocumentById(gameId)
+          .then((gameDocument) => {
+            const activePlayer = move.username
+            if (activePlayer === gameDocument.activePlayer) {
+              executeMoveOnGame(move, gameDocument)
+              // TODO win ???
+              nextTurn(gameDocument)
+              gameDocument.markModified('sticks')
+              gameDocument.markModified('activePlayer')
+              gameDocument.markModified('players')
+              gameDocument.markModified('playersWithTurnDone')
+              gameDocument.save()
+                .then((game) => {
+                  io.emit(gameId, game) })
+            } else {
+              console.log('ERROR: a player that is not the active player has made a move ');
+            }
+          })
+
+        function executeMoveOnGame(move, game) {
+          move.selectedSticks.forEach(setRemovedByActivePlayer);
+ 
+          function setRemovedByActivePlayer(stick, index) {
+            game.sticks[stick.row][stick.position] = move.username
+          }
+        }
+
+        function nextTurn(game) {
+          if (game.turnRotation) {
+            rotationTurns.nextTurn(game)
+          } else {
+            chaosTurns.nextTurn(game)
+          }
+        }
       })
     }
 
     function propagateDisconnection() {
       socket.on('disconnect', function() {
-        // console.log('5 - disconnection: ' + user.username + '; event = ' + update);
+        // console.log('3 - disconnection: ' + user.username + '; event = ' + update);
         updatePlayersWaitingForGameStart()
         // updateGameWithDisconnectionOf(socket.username)
       })
@@ -147,7 +188,7 @@ function coordinateGameRoomWithSocketIO() {
       }
 
       function updateGameWithDisconnectionOf(username) {
-        gameCollection.findGameDocumentById(gameUpdate)
+        gameCollection.findGameDocumentById(gameId)
           .then((gameDocument) => {
             const players = gameDocument.players
             if (players) { // if a game contains players, then it's started

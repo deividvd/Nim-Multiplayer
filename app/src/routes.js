@@ -17,7 +17,6 @@ function initGameRoutes(app) {
   const gameController = require('./controllers/game')
   app.route('/create-game').post(gameController.createGame)
   app.route('/get-game-by-id').post(gameController.getGameById)
-  app.route('/update-game-with-players').post(gameController.updateGameWithPlayers)
 }
 
 function useIndex(app) {
