@@ -1,11 +1,13 @@
 @import 'bootstrap-config.scss';
+
 @import 'variables.scss';
+
+@import 'index.scss';
 
 @import 'elements/app-header.scss';
 @import 'elements/go-back-button.scss';
 @import 'elements/how-to-play.scss';
 
-@import 'index.scss';
-
 @import 'routes/user/account.scss';
+
 @import 'routes/game/game-room.scss';

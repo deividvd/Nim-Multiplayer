@@ -9,6 +9,34 @@ const GameRoom = {
     <div v-if="username">
 
 
+    <!-- "invite players" section -->
+
+
+    <section v-if="game && ! game.players">
+      <h1> Invite other Players! </h1>
+
+      <p> Copy and link the URL of this page to invite other players! </p>
+
+      <form>
+        <p v-html="gameSettingsMessage"></p>
+
+        <label> Players (Max Number {{ maxPlayerNumber }}): </label>
+          
+        <ol>
+          <li v-for="player in playersWaitingForGameStart">
+            {{ player }}
+          </li>
+        </ol>
+
+        <p v-html="errorMessage" class="error-message"></p>
+
+        <button type="submit" v-on:click="startGame"> Start Game! </button>
+      </form>
+
+      <how-to-play/>
+    </section>
+
+
     <!-- "play the game" section -->
   
 
@@ -51,7 +79,7 @@ const GameRoom = {
 
       <p v-html="errorMessage" class="error-message"></p>
         
-      <div v-for="stickRow in sticksWithMetadata" class="stick-row">
+      <div v-for="stickRow in sticksWithVisualData" class="stick-row">
         <button v-for="stick in stickRow"
                 :disabled="stick.removed"
                 v-bind:class="{ notSelectedStick: ! stick.selected, selectedStick: stick.selected }"
@@ -62,39 +90,10 @@ const GameRoom = {
       </div>
     </section>
 
-
-    <!-- "invite players" section -->
-
-
-    <section v-if="game && ! game.players">
-      <h1> Invite other Players! </h1>
-
-      <p> Copy and link the URL of this page to invite other players! </p>
-
-      <form>
-        <p v-html="gameSettingsMessage"></p>
-
-        <label> Players (Max Number {{ maxPlayerNumber }}): </label>
-          
-        <ol>
-          <li v-for="player in playersWaitingForGameStart">
-            {{ player }}
-          </li>
-        </ol>
-
-        <p v-html="errorMessage" class="error-message"></p>
-
-        <button type="submit" v-on:click="startGame"> Start Game! </button>
-      </form>
-
-      <how-to-play/>
-    </section>
+    </div> <!-- v-if="username" -->
 
 
-    </div> <!-- div v-if="username" -->
-
-
-    <!-- "user is not logged in" or/and "game doesn't exist" or "user is not in this game" section -->
+    <!-- error section -->
 
 
     <section v-if="! username || ! game || (game.players && ! isUsernameInGame() )">
@@ -107,18 +106,19 @@ const GameRoom = {
   `,
   data() {
     return {
-      // "play the game" data:
+      // data in "invite players" and "play the game" sections:
       username: null, // the user logged in
-      game: false,
-      sticksWithMetadata: null,
-      startGameMessage: 'start: ',
-      // "invite players" data:
-      gameSettingsMessage: '',
-      maxPlayerNumber: 6,
-      playersWaitingForGameStart: [],
-      // data shared in both sections:
-      errorMessage: '',
       socket: null,
+      // data in "invite players" section:
+      maxPlayerNumber: 6,
+      gameSettingsMessage: '',
+      playersWaitingForGameStart: [],
+      startGameMessage: 'start: ',
+      // data in "play the game" section:
+      game: false,
+      sticksWithVisualData: null,
+      // data shared in all sections:
+      errorMessage: '',
     }
   },
   mounted() {
@@ -193,6 +193,7 @@ const GameRoom = {
       event.preventDefault()
       this.errorMessage = gatherClientSideErrorsFrom(this)
       if (this.errorMessage === '') {
+        console.log('[4] send ' + this.startGameMessage)
         this.socket.emit(this.startGameMessage, this.playersWaitingForGameStart)
       }
       
@@ -219,29 +220,29 @@ const GameRoom = {
     usernameIsNotTheActivePlayer: function() {
       return this.game.activePlayer !== this.username
     },
-    updateSticksWithMetadata: function() {
-      const newSticksWithMetadata = []
+    updateSticksWithVisualData: function() {
+      const newSticksWithVisualData = []
       let row = 0
       for (let stickRow of this.game.sticks) {
-        const newStickRowWithMetadata = []
-        let stickPosition = 0
+        const newStickRowWithVisualData = []
+        let position = 0
         for (let removedStick of stickRow) {
           let stick = { removed: true }
           if ( ! removedStick) {
             stick = {
               row: row,
-              position: stickPosition,
+              position: position,
               removed: false,
               selected: false,
             }
           }
-          newStickRowWithMetadata.push(stick)
-          stickPosition++
+          newStickRowWithVisualData.push(stick)
+          position++
         }
-        newSticksWithMetadata.push(newStickRowWithMetadata)
+        newSticksWithVisualData.push(newStickRowWithVisualData)
         row++
       }
-      this.sticksWithMetadata = newSticksWithMetadata
+      this.sticksWithVisualData = newSticksWithVisualData
     },
     selectStick: function(stick) {
       stick.selected = ! stick.selected
@@ -255,12 +256,13 @@ const GameRoom = {
           selectedSticks: selectedSticks,
           username: this.username,
         }
+        console.log('[5] send game move')
         this.socket.emit(this.game._id, move)
       }
 
       function getSelectedSticksOf(vueComponent) {
         const selectedSticks = []
-        for (let stickRow of vueComponent.sticksWithMetadata) {
+        for (let stickRow of vueComponent.sticksWithVisualData) {
           for (let stick of stickRow) {
             if (stick.selected) {
               selectedSticks.push(stick)
@@ -277,12 +279,12 @@ const GameRoom = {
         const orderedSelectedSticksByPosition = selectedSticks.sort(
           function (firstStick, secondStick) {
             if (firstStick.position < secondStick.position) {
-              return -1;
+              return -1
             }
             if (firstStick.position > secondStick.position) {
-              return 1;
+              return 1
             }
-            return 0;
+            return 0
           }
         )
         let row = selectedSticks[0].row
@@ -305,78 +307,104 @@ const GameRoom = {
 
 function connectSocketIO(vueComponent) {
   const username = vueComponent.username
+  const playersWaiting = vueComponent.playersWaitingForGameStart
   const gameId = vueComponent.game._id
-  const userJoinGameRoom = 'user join game room: ' + gameId
-  const userUpdate = 'user update: ' + gameId
+  const playerJoinsGame = 'join: ' + gameId
+  const updatePlayersWaiting = 'update: ' + gameId
+  const disconnectPlayerWaiting = 'disconnection: ' + gameId
   const startGame = vueComponent.startGameMessage
   const connectionOptions = {
     query: {
       username: username,
-      userJoinGameRoom: userJoinGameRoom,
-      userUpdate: userUpdate,
+      playerJoinsGame: playerJoinsGame,
+      updatePlayersWaiting: updatePlayersWaiting,
+      disconnectPlayerWaiting: disconnectPlayerWaiting,
       startGame: startGame,
       gameId: gameId,
     }
   }
   const socket = io(serverAddress, connectionOptions)
-  receiveUserJoinGameRoom()
-  receiveUserUpdate()
+  receivePlayerJoinsGameAndSendUpdatePlayersWaiting()
+  receiveUpdatePlayersWaiting()
+  receiveDisconnectPlayerWaiting()
   receiveStartGame()
   receiveGameMove()
-  // console.log('1 - emit: ' + userJoinGameRoom + ' : ' + username);
-  socket.emit(userJoinGameRoom, username)
   vueComponent.socket = socket
+  console.log('[1] send ' + playerJoinsGame)
+  socket.emit(playerJoinsGame)
 
-  function receiveUserJoinGameRoom() {
-    socket.on(userJoinGameRoom, function(username) {
-      // console.log('1 - receive: ' + userJoinGameRoom + ' : ' + username);
-      const user = { username: vueComponent.username }
-      // console.log('2 - emit: ' + userUpdate + ' : ' + user.username);
-      socket.emit(userUpdate, user)
+  function receivePlayerJoinsGameAndSendUpdatePlayersWaiting() {
+    socket.on(playerJoinsGame, function() {
+      console.log('[1] receive ' + playerJoinsGame)
+      console.log('[2] send ' + updatePlayersWaiting)
+      socket.emit(updatePlayersWaiting, username)
     })
   }
 
-  function receiveUserUpdate() {
-    const playersWaitingForGameStart = vueComponent.playersWaitingForGameStart
-    socket.on(userUpdate, function(user) {
-      // console.log('2 - receive: ' + userUpdate + ' : ' + user.username + '; disconnected = ' + user.disconnected);
-      const username = user.username
-      if (user.disconnected) {
-        // console.log('3 - ' + username + ': is disconnected' );
-        const usernameIndex = playersWaitingForGameStart.indexOf(username);
-        if (usernameIndex !== -1) {
-          playersWaitingForGameStart.splice(usernameIndex, 1);
+  function receiveUpdatePlayersWaiting() {
+    socket.on(updatePlayersWaiting, function(username) {
+      console.log('[2] receive ' + updatePlayersWaiting)
+      if (playersWaiting) {
+        if (playersWaiting.includes(username)) {
+          console.log('[2] receive ' + username + " but this user is already in game room")
+        } else {
+          console.log('[2] receive ' + username + ' and add it in game room')
+          playersWaiting.push(username)
         }
       } else {
-        if (playersWaitingForGameStart.includes(username)) {
-          // console.log('2 - ' + username + ': is already on page');
+        console.log('[2] receive ' + username + ' but the game is already started')
+      }
+    })
+  }
+
+  function receiveDisconnectPlayerWaiting() {
+    socket.on(disconnectPlayerWaiting, function(username) {
+      console.log('[3] receive ' + disconnectPlayerWaiting)
+      if (playersWaiting) {
+        if (playersWaiting.includes(username)) {
+          console.log('[3] receive ' + username + ' and remove it from game room')
+          const usernameIndex = playersWaiting.indexOf(username)
+          if (usernameIndex > -1) {
+            playersWaiting.splice(usernameIndex, 1)
+          }
         } else {
-          // console.log('2 - ' + 'new username on page: ' + username);
-          playersWaitingForGameStart.push(username)
+          console.log('[3] receive ' + username + " but this user is not in game room")
         }
+      } else {
+        console.log('[3] receive ' + username + ' but the game is already started')
       }
     })
   }
 
   function receiveStartGame() {
     socket.on(startGame, function(game) {
-      // console.log('4 - ' + startGame);
+      console.log('[4] receive ' + startGame)
       vueComponent.errorMessage = ''
+      vueComponent.playersWaitingForGameStart = false
       updateVueComponentWith(game)
     })
   }
 
   function updateVueComponentWith(game) {
     vueComponent.game = game
-    vueComponent.updateSticksWithMetadata()
+    vueComponent.updateSticksWithVisualData()
     vueComponent.$forceUpdate()
   }
 
   function receiveGameMove() {
     socket.on(gameId, function(game) {
-      console.log('5 - move received');
-      // TODO win ???
-      updateVueComponentWith(game)
+      console.log('[5] receive game move')
+      if (game.winner) {
+        router.push({
+          name: GameEndRoute.name,
+          params: {
+            winner: game.winner,
+            losers: game.losers
+          }
+        })
+      } else {
+        updateVueComponentWith(game)
+      }
     })
   }
 }

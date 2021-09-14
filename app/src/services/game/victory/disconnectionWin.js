@@ -1,0 +1,8 @@
+exports.onlyOnePlayerInGame = function(game) {
+  return (
+    game.players.length === 1 &&
+    game.players[0] === game.activePlayer &&
+    game.playersWithTurnDone.length === 0 &&
+    game.disconnectedPlayers.length === 0
+  )
+}

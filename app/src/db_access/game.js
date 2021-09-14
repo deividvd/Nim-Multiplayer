@@ -8,23 +8,26 @@ exports.insertNewGame = function(sticks, standardVictory, turnRotation) {
       sticks: sticks,
       standardVictory: standardVictory,
       turnRotation: turnRotation,
+      activePlayer: null,
       players: null,
       playersWithTurnDone: null,
-      activePlayer: null,
       eliminatedPlayers: null,
+      disconnectedPlayers: null
     }
   )
   return newGame.save()
 }
 
-exports.updateGameWithPlayers = function(id, players, playersWithTurnDone, activePlayer) {
+exports.updateGameWithPlayers = function(id, activePlayer, players) {
   return Game.findByIdAndUpdate(id, 
     {
-      players: players,
-      playersWithTurnDone: playersWithTurnDone,
       activePlayer: activePlayer,
+      players: players,
+      playersWithTurnDone: [],
       eliminatedPlayers: [],
-    }
+      disconnectedPlayers: []
+    },
+    { new: true } // 'new: true' returns the game document after the update is applied
   ).lean()
 }
 

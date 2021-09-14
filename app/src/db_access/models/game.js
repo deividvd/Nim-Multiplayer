@@ -5,10 +5,11 @@ module.exports = function(mongoose) {
       sticks: [Schema.Types.Mixed],
       standardVictory: Boolean, // true = Standard victory / false = Marienbad victory
       turnRotation: Boolean, // true = rotation turns / false = chaos turns
+      activePlayer: String,
       players: [Schema.Types.Mixed],
       playersWithTurnDone: [Schema.Types.Mixed],
-      activePlayer: String,
-      eliminatedPlayers: [Schema.Types.Mixed]
+      eliminatedPlayers: [Schema.Types.Mixed],
+      disconnectedPlayers: [Schema.Types.Mixed]
     },
     { versionKey: false }
   )

@@ -1,16 +1,19 @@
 /*
-  the file containing the entire Bootstrap library (version 5.0.2)
+  the import of the file containing the entire Bootstrap library (version 5.0.2)
+  
   @import '../../node_modules/bootstrap/scss/bootstrap.scss';
-  the following imports are a subset of the imports contained in this file:
+
+  the following imports are a subset of the imports contained in that file
 */
 
-// Boostrap: configuration files
+// Boostrap: Configuration
+
 @import '../../node_modules/bootstrap/scss/_functions.scss';
 @import '../../node_modules/bootstrap/scss/_variables.scss';
 @import '../../node_modules/bootstrap/scss/_mixins.scss';
 @import '../../node_modules/bootstrap/scss/_utilities.scss';
 
-// Boostrap: layout and components
+// Boostrap: Layout and components
 
 // Bootstrap root elements
 @import '../../node_modules/bootstrap/scss/_root.scss';

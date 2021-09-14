@@ -3,9 +3,12 @@
 
 const gameCollection = require('../db_access/game')
 const ErrorSender = require('../services/ErrorSender')
-const shufflePlayers = require('../services/game/turns/utilities/shufflePlayers')
+const playersUtilities = require('../services/game/players')
 const rotationTurns = require('../services/game/turns/rotation')
 const chaosTurns = require('../services/game/turns/chaos')
+const standardVictory = require('../services/game/victory/standard')
+// const marienbadVictory = require('../services/game/victory/marienbad')
+const disconnectionWin = require('../services/game/victory/disconnectionWin')
 coordinateGameRoomWithSocketIO()
 
 /**
@@ -81,139 +84,197 @@ exports.getGameById = function(req, res) {
 function coordinateGameRoomWithSocketIO() {
   io.on('connection', function(socket) {
     const username = socket.handshake.query.username
-    socket.username = username
-    const userJoinGameRoom = socket.handshake.query.userJoinGameRoom
-    const userUpdate = socket.handshake.query.userUpdate
+    const playerJoinsGame = socket.handshake.query.playerJoinsGame
+    const updatePlayersWaiting = socket.handshake.query.updatePlayersWaiting
     const startGame = socket.handshake.query.startGame
     const gameId = socket.handshake.query.gameId
-    propagateUserJoinGameRoom()
-    propagateUserUpdate()
-    receiveStartGame()
-    receiveGameMove()
-    propagateDisconnection()
+    const disconnectPlayerWaiting = socket.handshake.query.disconnectPlayerWaiting
+    propagatePlayerJoinsGame()
+    propagateUpdatePlayersWaiting()
+    updateGameAndPropagateStartGame()
+    applyGameMoveAndHandleDisconnectionsThenPropagate()
+    applyDisconnectionAndPropagate()
 
-    function propagateUserJoinGameRoom() {
-      socket.on(userJoinGameRoom, function(username) {
-        // console.log('1 - emit: ' + userJoinGameRoom + ' : ' + username);
-        io.emit(userJoinGameRoom, username)
+    function propagatePlayerJoinsGame() {
+      socket.on(playerJoinsGame, function() {
+        console.log('[1] propagate ' + playerJoinsGame)
+        io.emit(playerJoinsGame)
       })
     }
 
-    function propagateUserUpdate() {
-      socket.on(userUpdate, function(user) {
-        // console.log('2 - emit: ' + userUpdate + ' : ' + user.username + '; disconnected = ' + user.disconnected);
-        io.emit(userUpdate, user)
+    function propagateUpdatePlayersWaiting() {
+      socket.on(updatePlayersWaiting, function(username) {
+        console.log('[2] propagate ' + username + ' ' + updatePlayersWaiting)
+        io.emit(updatePlayersWaiting, username)
       })
     }
 
-    function receiveStartGame() {
-      socket.on(startGame, function(playersWaitingForGameStart) {
-        // console.log('4 - ' + startGame);
-        const gameId = startGame.substring(7) // substring(7) because it must remove 'start: '
-        const players = playersWaitingForGameStart
+    function updateGameAndPropagateStartGame() {
+      socket.on(startGame, function(playersWaiting) {
+        console.log('[4] (1) propagate ' + startGame)
+        const players = playersWaiting
+        playersUtilities.shuffle(players)
         gameCollection.findGameById(gameId)
           .then((game) => {
-            shufflePlayers.shuffle(players)
-            const activePlayerObj = { player: null }
-            setActivePlayerForNewGame(game.turnRotation, activePlayerObj, players)
-            const playersWithTurnDone = []
-            gameCollection.updateGameWithPlayers(gameId, players, playersWithTurnDone, activePlayerObj.player)
-              .then((game) => { io.emit(startGame, game) })
+            const activePlayer = getActivePlayerForNewGame(game.turnRotation, players)
+            gameCollection.updateGameWithPlayers(gameId, activePlayer, players)
+              .then((game) => {
+                console.log('[4] (2) propagate ' + startGame)
+                io.emit(startGame, game)
+              })
           })
  
-        function setActivePlayerForNewGame(turnRotation, activePlayerObj, players) {
+        function getActivePlayerForNewGame(turnRotation, players) {
+          let activePlayer
           if (turnRotation) {
-            rotationTurns.setActivePlayerForNewGame(activePlayerObj, players)
+            activePlayer = rotationTurns.getActivePlayerForNewGame(players)
           } else {
-            chaosTurns.setActivePlayerForNewGame(activePlayerObj, players)
+            activePlayer = chaosTurns.getActivePlayerForNewGame(players)
           }
+          return activePlayer
         }
       })
     }
 
-    function receiveGameMove() {
+    function applyGameMoveAndHandleDisconnectionsThenPropagate() {
       socket.on(gameId, function(move) {
-        // console.log('5 - move received from ' + move.username);
-        // console.log(move.selectedSticks);
+        const activePlayer = move.username
+        const selectedSticks = move.selectedSticks
+        console.log('[5] (1) propagate game move received from ' + activePlayer)
+        console.log(selectedSticks)
         gameCollection.findGameDocumentById(gameId)
           .then((gameDocument) => {
-            const activePlayer = move.username
             if (activePlayer === gameDocument.activePlayer) {
-              executeMoveOnGame(move, gameDocument)
-              // TODO win ???
-              nextTurn(gameDocument)
-              gameDocument.markModified('sticks')
-              gameDocument.markModified('activePlayer')
-              gameDocument.markModified('players')
-              gameDocument.markModified('playersWithTurnDone')
-              gameDocument.save()
-                .then((game) => {
-                  io.emit(gameId, game) })
+              applyMove()
+              let win = applyWinOrApplyAllSticksRemoved(gameDocument)
+              if ( ! win) {
+                nextTurnAndRemoveDisconnectionsDetected(gameDocument)
+                win = applyWinOrApplyAllSticksRemoved(gameDocument)
+              }
+              propagateMove(win, activePlayer, gameDocument)
             } else {
-              console.log('ERROR: a player that is not the active player has made a move ');
+              console.log('ERROR: a player that is not the active player has attempted to make a move')
+            }
+
+            function applyMove() {
+              selectedSticks.forEach((stick) => {
+                gameDocument.sticks[stick.row][stick.position] = activePlayer
+              })
+              gameDocument.markModified('sticks')
             }
           })
-
-        function executeMoveOnGame(move, game) {
-          move.selectedSticks.forEach(setRemovedByActivePlayer);
- 
-          function setRemovedByActivePlayer(stick, index) {
-            game.sticks[stick.row][stick.position] = move.username
-          }
-        }
-
-        function nextTurn(game) {
-          if (game.turnRotation) {
-            rotationTurns.nextTurn(game)
-          } else {
-            chaosTurns.nextTurn(game)
-          }
-        }
       })
     }
 
-    function propagateDisconnection() {
-      socket.on('disconnect', function() {
-        // console.log('3 - disconnection: ' + user.username + '; event = ' + update);
-        updatePlayersWaitingForGameStart()
-        // updateGameWithDisconnectionOf(socket.username)
-      })
+    function applyWinOrApplyAllSticksRemoved(gameDocument) {
+      /* here the program should choose between standard or marienbad consequences caused
+         when all sticks are removed:
+          - in standard victory, all sticks removed means always victory,
+          - in marienbad victory, all sticks removed means the loss of one player,
+            and if only one players is in game, then the game is win */
+      console.log("standard win = " + standardVictory.applySticksWin(gameDocument));
+      console.log("single player in game win = " + disconnectionWin.onlyOnePlayerInGame(gameDocument));
+      console.log();
+      return ( standardVictory.applySticksWin(gameDocument) ||
+          disconnectionWin.onlyOnePlayerInGame(gameDocument) )
+    }
 
-      function updatePlayersWaitingForGameStart() {
-        const user = {
-          username: username,
-          disconnected: true,
+    function nextTurnAndRemoveDisconnectionsDetected(gameDocument) {
+      applyNextTurn()
+      handleDisconnections()
+
+      function applyNextTurn() {
+        console.log("(1) applyNextTurn = " + gameDocument.activePlayer);
+        if (gameDocument.turnRotation) {
+          rotationTurns.nextTurn(gameDocument)
+        } else {
+          chaosTurns.nextTurn(gameDocument)
         }
-        io.emit(userUpdate, user)
+        gameDocument.markModified('activePlayer')
+        console.log("(2) applyNextTurn = " + gameDocument.activePlayer);
       }
 
-      function updateGameWithDisconnectionOf(username) {
+      function handleDisconnections() {
+        /* here the program should choose between standard or marienbad consequences caused
+           when a disconnected user is detected:
+            - in standard victory, nothing happen,
+            - in marienbad victory, all sticks are refreshed except for
+              those removed by disconnected players */
+        if (gameDocument.disconnectedPlayers.includes(gameDocument.activePlayer)) {
+          console.log('found disconnected player = ' + gameDocument.activePlayer);
+          const disconnectedPlayer = gameDocument.activePlayer
+          playersUtilities.removePlayer(disconnectedPlayer).fromPlayersOf(gameDocument)
+          playersUtilities.removePlayer(disconnectedPlayer).fromDisconnectedPlayersOf(gameDocument)
+          gameDocument.eliminatedPlayers.push(disconnectedPlayer)
+          gameDocument.markModified('eliminatedPlayers')
+          nextTurnAndRemoveDisconnectionsDetected(gameDocument)
+        }
+      }
+    }
+
+    function propagateMove(win, activePlayer, gameDocument) {
+      gameDocument.save()
+        .then((game) => {
+          if (! win) {
+            console.log('[5] (2) propagate game move received from ' + activePlayer)
+            io.emit(gameId, game)
+          } else {
+            console.log('[5] (2) propagate winning move received from ' + activePlayer)
+            const winObject = {
+              winner: game.activePlayer,
+              losers: game.eliminatedPlayers
+            }
+            io.emit(gameId, winObject)
+          }
+        })
+    }
+
+    function applyDisconnectionAndPropagate() {
+      socket.on('disconnect', function() {
         gameCollection.findGameDocumentById(gameId)
           .then((gameDocument) => {
-            const players = gameDocument.players
-            if (players) { // if a game contains players, then it's started
-              if (gameDocument.activePlayer === username) {
-
+            /* if the game is canceled from database and a user visits the game page,
+               this gameDocument is null and cause null pointer error */
+            if (gameDocument) {
+              if (! gameDocument.players) {
+                propagateDisconnectionWhileWaitingForGameStart()
               } else {
-                const activePlayerIndex = players.indexOf(activePlayer)
-                if (index > -1) {
-                  gameDocument.players.splice(activePlayerIndex, 1)
+                propagateDisconnectionWhilePlaying()
+              }
+
+              function propagateDisconnectionWhileWaitingForGameStart() {
+                console.log('[3] propagate disconnection of ' + username)
+                io.emit(disconnectPlayerWaiting, username)
+              }
+
+              function propagateDisconnectionWhilePlaying() {
+                if (username === gameDocument.activePlayer) {
+                  /* here the program should choose between standard or marienbad consequences caused
+                     when a disconnected user is detected:
+                      - in standard victory, nothing happen,
+                      - in marienbad victory, all sticks are refreshed except for
+                        those removed by disconnected players */
+                  console.log('[6] propagate disconnection of ' + username)
+                  playersUtilities.removePlayer(username).fromPlayersOf(gameDocument)
+                  gameDocument.eliminatedPlayers.push(username)
+                  gameDocument.markModified('eliminatedPlayers')
+                  let win = applyWinOrApplyAllSticksRemoved(gameDocument)
+                  if ( ! win) {
+                    nextTurnAndRemoveDisconnectionsDetected(gameDocument)
+                    win = applyWinOrApplyAllSticksRemoved(gameDocument)
+                  }
+                  propagateMove(win, null, gameDocument)
+                } else {
+                  // here, standard victory and marienbad should do the same thing
+                  console.log('[6] add disconnection of ' + username)
+                  gameDocument.disconnectedPlayers.push(username)
+                  gameDocument.markModified('disconnectedPlayer')
+                  gameDocument.save()
                 }
               }
-              if (gameDocument.standardVictory) {
-                io.emit(startGame)
-              } else {
-                // TODO
-              }
-            }
-            
-            if (gameDocument.players) { 
-              gameDocument.eliminatedPlayers.push(username)
-              gameDocument.save()
             }
           })
-          .catch((dbError) => { errorSender.sendDatabaseError(dbError) })
-      }
+      })
     }
   })
 }

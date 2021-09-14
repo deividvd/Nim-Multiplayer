@@ -37,6 +37,11 @@ const GameRoomRoute = {
   name: 'GameRoom',
   component: GameRoom
 }
+const GameEndRoute = {
+  path: '/game-end',
+  name: 'GameEnd',
+  component: GameEnd
+}
 
 const router = new VueRouter({
   mode: 'history',
@@ -52,6 +57,7 @@ const router = new VueRouter({
     // game routes
     CreateGameRoomRoute,
     GameRoomRoute,
+    GameEndRoute,
     // 404
     { path: '/404', component: NotFoundError },
     { path: '*', redirect: '/404' }
