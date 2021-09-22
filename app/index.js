@@ -3,7 +3,7 @@ createGlobalAppRoot()
 const app = newExpressApp()
 const httpsServer = newHTTPSServer(app)
 createSocketIO(httpsServer)
-createRoutes()
+createRoutes(app)
 startHTTPSServer(httpsServer)
 
 function createDBConnection() {
@@ -33,7 +33,8 @@ function newExpressApp() {
   return app
 
   function serveFrontEndFiles() {
-    app.use('/static', express.static(__dirname + '/public'))
+    const frontEndFilePath = __dirname + '\\www\\public'
+    app.use('/static', express.static(frontEndFilePath))
   }
 
   function useJSONRequest() { // e.g.: POST request's body in JSON
@@ -85,10 +86,10 @@ function newExpressApp() {
 }
 
 function newHTTPSServer(app) {
-  const httpsCredentials = createHTTPSCredential()
-  return createHTTPSServer()
+  const httpsCredentials = newCredentials()
+  return newServer()
   
-  function createHTTPSCredential() {
+  function newCredentials() {
     const fs = require('fs')
     const privateKey = fs.readFileSync('https_stuff/server.key', 'utf8')
     const certificate = fs.readFileSync('https_stuff/server.cert', 'utf8')
@@ -98,7 +99,7 @@ function newHTTPSServer(app) {
     }
   }
 
-  function createHTTPSServer() {
+  function newServer() {
     const https = require('https')
     return https.createServer(httpsCredentials, app)
   }
@@ -109,7 +110,7 @@ function createSocketIO(httpsServer) {
   global.io = io(httpsServer)
 }
 
-function createRoutes() {
+function createRoutes(app) {
   const routes = require('./src/routes.js')
   routes(app)
 }
@@ -122,7 +123,6 @@ function startHTTPSServer(httpsServer) {
         console.log("\n N.B.: the server will listen on:")
         console.log("\n https://localhost:/" + port)
         console.log("\n ... and the connection will be insecure! ( https certificate self-signed )")
-        console.log("")
       }
   )
 }

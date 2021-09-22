@@ -39,7 +39,7 @@ const Login = {
     }
   },
   mounted() {
-    sessionUtilities().goHomeIfUserIsLoggedIn(this)
+    sessionUtilitiesOf(this).goHomeIfUserIsLoggedIn()
   },
   methods: {
     login: function(event) {

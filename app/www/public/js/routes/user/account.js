@@ -43,8 +43,8 @@ const Account = {
     }
   },
   mounted() {
-    sessionUtilities().goHomeIfUserIsLoggedOut(this)
-    sessionUtilities().setUsernameOf(this)
+    sessionUtilitiesOf(this).goHomeIfUserIsLoggedOut()
+    sessionUtilitiesOf(this).setUsername()
   },
   methods: {
     logout: function() {

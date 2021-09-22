@@ -26,7 +26,7 @@ const UserSection = {
     }
   },
   mounted() {
-    sessionUtilities().setUsernameOf(this)
+    sessionUtilitiesOf(this).setUsername()
   },
   methods: {
     goToAccount: function() {

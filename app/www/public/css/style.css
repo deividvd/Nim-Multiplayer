@@ -6412,11 +6412,6 @@ footer {
   flex-wrap: wrap;
 }
 
-hr {
-  margin-left: 3%;
-  margin-right: 3%;
-}
-
 #logo {
   width: 35%;
   max-width: 200px;
@@ -6467,6 +6462,16 @@ hr {
 .topic {
   font-weight: bold;
   font-size: 1.3rem;
+}
+
+.footer-link {
+  font-weight: bold;
+  color: #000000;
+  background-color: #00D26E;
+  padding: 2%;
+  margin-left: 2%;
+  margin-right: 2%;
+  margin-bottom: 2%;
 }
 
 #delete-account {

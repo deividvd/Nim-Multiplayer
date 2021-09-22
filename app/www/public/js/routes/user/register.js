@@ -54,7 +54,7 @@ const Register = {
     }
   },
   mounted() {
-    sessionUtilities().goHomeIfUserIsLoggedIn(this)
+    sessionUtilitiesOf(this).goHomeIfUserIsLoggedIn()
   },
   methods: {
     register: function(event) {

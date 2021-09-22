@@ -20,7 +20,7 @@ const GameRoom = {
       <form>
         <p v-html="gameSettingsMessage"></p>
 
-        <label> Players (Max Number {{ maxPlayerNumber }}): </label>
+        <label> <b>Players</b> (Max Number {{ maxPlayerNumber }}): </label>
           
         <ol>
           <li v-for="player in playersWaitingForGameStart">
@@ -122,7 +122,7 @@ const GameRoom = {
     }
   },
   mounted() {
-    const promiseSetUsername = sessionUtilities().promiseSetUsernameOf(this)
+    const promiseSetUsername = sessionUtilitiesOf(this).promiseSetUsername()
     const promiseSetGameSettings = promiseSetGameSettingsOf(this)
     Promise.all([promiseSetUsername, promiseSetGameSettings])
       .then((results) => {

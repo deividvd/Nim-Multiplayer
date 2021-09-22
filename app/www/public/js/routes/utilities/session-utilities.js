@@ -1,26 +1,39 @@
 const getUserLoggedInPath = serverAddress + 'get-user-logged-in'
 
-function sessionUtilities() {
+/**
+ * This object is an utility for routing between two pages.
+ * 
+ * It uses the route parameters to save: the previous route name
+ * and some custom data inside an object.
+ * 
+ * The route parameters are not inserted in the route path (URL),
+ * in this way the URL is short and clean.
+ * 
+ * Drawback: (obviously, since the parameters are not inserted in the URL)
+ * if the user reload the (route) page, the parameters are lost,
+ * then this object will route to Home instead of the previous page.
+ */
+function sessionUtilitiesOf(vueComponent) {
   return {
-    setUsernameOf,
-    promiseSetUsernameOf,
+    setUsername,
+    promiseSetUsername,
     goHomeIfUserIsLoggedIn,
     goHomeIfUserIsLoggedOut,
   }
 
-  function setUsernameOf(vueComponent) {
+  function setUsername() {
     axios.get(getUserLoggedInPath)
       .then((response) => { vueComponent.username = response.data.username })
       .catch((error) => { vueComponent.errorMessage = error })
   }
 
-  function promiseSetUsernameOf(vueComponent) {
+  function promiseSetUsername() {
     return axios.get(getUserLoggedInPath)
       .then(response => { vueComponent.username = response.data.username })
       .catch((error) => { vueComponent.errorMessage = error })
   }
 
-  function goHomeIfUserIsLoggedIn(vueComponent) {
+  function goHomeIfUserIsLoggedIn() {
     axios.get(getUserLoggedInPath)
       .then((response) => {
         if (response.data.username) {
@@ -30,7 +43,7 @@ function sessionUtilities() {
       .catch((error) => { vueComponent.errorMessage = error })
   }
 
-  function goHomeIfUserIsLoggedOut(vueComponent) {
+  function goHomeIfUserIsLoggedOut() {
     axios.get(getUserLoggedInPath)
       .then((response) => {
         if ( ! response.data.username) {

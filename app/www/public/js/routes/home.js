@@ -23,13 +23,13 @@ const Home = {
     <how-to-play/>
 
     <footer>
-      <router-link to="/terms-of-service"> TERMS OF SERVICE </router-link>
+      <router-link class="footer-link" to="/terms-of-service"> TERMS OF SERVICE </router-link>
       <hr/>
-      <router-link to="/privacy"> PRIVACY </router-link>
+      <router-link class="footer-link" to="/privacy"> PRIVACY </router-link>
       <hr/>
-      <a href="https://www.facebook.com/" target="_blank"> Facebook </a>
+      <a class="footer-link" href="https://www.facebook.com/" target="_blank"> Facebook </a>
       <hr/>
-      <a href="https://twitter.com/" target="_blank"> Twitter </a>
+      <a class="footer-link" href="https://twitter.com/" target="_blank"> Twitter </a>
     </footer>
 
   </div>
