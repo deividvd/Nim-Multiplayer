@@ -8,12 +8,7 @@ startHTTPSServer(httpsServer)
 
 function createDBConnection() {
   const mongoose = require('mongoose')
-  const mongooseSettings = {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true
-  }
-  mongoose.connect('mongodb://localhost/nim_multiplayer', mongooseSettings)
+  mongoose.connect('mongodb://localhost/nim_multiplayer')
     .then(() => { console.log('\n MongoDB Connected') })
     .catch((error) => { console.log('\n MongoDB Connection Error: ' + error) })
 }
