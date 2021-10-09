@@ -67,18 +67,26 @@ const GameRoom = {
             <li v-for="player in game.playersWithTurnDone">
               {{ player }}
             </li>
+            <li v-for="player in game.eliminatedPlayers" class="eliminated-player">
+              {{ player }}
+            </li>
           </ul>
         </div>
 
-        <button :disabled="usernameIsNotTheActivePlayer()"
+        <button v-if=" ! isUsernameEliminated()"
+                :disabled="usernameIsNotTheActivePlayer()"
                 id="remove-sticks-btn" v-on:click="removeSelectedSticks" type="button"
         >
           REMOVE STICKS
         </button>
+
+        <p v-else>
+          <b> YOU LOST :( </b> ... let's see who will win!
+        </p>
       </div>
 
       <p v-html="errorMessage" class="error-message"></p>
-        
+      
       <div v-for="stickRow in sticksWithVisualData" class="stick-row">
         <button v-for="stick in stickRow"
                 :disabled="stick.removed"
@@ -173,13 +181,13 @@ const GameRoom = {
     function gatherServerSideErrorsFrom(vueComponent) {
       var errorMessage = ''
       const username = vueComponent.username
-      const usernameNotLoggedIn = '<b>ERROR</b>: you must log in to play a game.'
+      const usernameNotLoggedInMessage = '<b>ERROR</b>: you must log in to play a game.'
       const game = vueComponent.game
       const gameDoNotExistMessage = "<b>ERROR</b>: this game doesn't exist, you have to create a new one!"
       if (( ! username) && (! game)) {
-        errorMessage = usernameNotLoggedIn.concat(' <br/> ' + gameDoNotExistMessage)
+        errorMessage = usernameNotLoggedInMessage.concat(' <br/> ' + gameDoNotExistMessage)
       } else if ( ! username) {
-        errorMessage = usernameNotLoggedIn
+        errorMessage = usernameNotLoggedInMessage
       } else if ( ! game) {
         errorMessage = gameDoNotExistMessage
       } else if (game.players && ! vueComponent.isUsernameInGame()) {
@@ -193,7 +201,7 @@ const GameRoom = {
       event.preventDefault()
       this.errorMessage = gatherClientSideErrorsFrom(this)
       if (this.errorMessage === '') {
-        console.log('[4] send ' + this.startGameMessage)
+        // console.log('[4] send ' + this.startGameMessage)
         this.socket.emit(this.startGameMessage, this.playersWaitingForGameStart)
       }
       
@@ -210,9 +218,14 @@ const GameRoom = {
       }
     },
     isUsernameInGame: function() {
-      return (this.game.players.includes(this.username) ||
+      return this.game.players.includes(this.username) ||
           this.game.playersWithTurnDone.includes(this.username) ||
-          this.game.eliminatedPlayers.includes(this.username))
+          this.game.eliminatedPlayers.includes(this.username) ||
+          this.game.disconnectedPlayers.includes(this.username)
+    },
+    isUsernameEliminated: function() {
+      return this.game.eliminatedPlayers.includes(this.username) ||
+          this.game.disconnectedPlayers.includes(this.username)
     },
     activePlayerEqualsTo: function(player) {
       return this.game.activePlayer === player
@@ -256,14 +269,14 @@ const GameRoom = {
           selectedSticks: selectedSticks,
           username: this.username,
         }
-        console.log('[5] send game move')
+        // console.log('[5] send game move')
         this.socket.emit(this.game._id, move)
       }
 
       function getSelectedSticksOf(vueComponent) {
         const selectedSticks = []
-        for (let stickRow of vueComponent.sticksWithVisualData) {
-          for (let stick of stickRow) {
+        for (let stickRowWithVisualData of vueComponent.sticksWithVisualData) {
+          for (let stick of stickRowWithVisualData) {
             if (stick.selected) {
               selectedSticks.push(stick)
             }
@@ -330,55 +343,55 @@ function connectSocketIO(vueComponent) {
   receiveStartGame()
   receiveGameMove()
   vueComponent.socket = socket
-  console.log('[1] send ' + playerJoinsGame)
+  // console.log('[1] send ' + playerJoinsGame)
   socket.emit(playerJoinsGame)
 
   function receivePlayerJoinsGameAndSendUpdatePlayersWaiting() {
     socket.on(playerJoinsGame, function() {
-      console.log('[1] receive ' + playerJoinsGame)
-      console.log('[2] send ' + updatePlayersWaiting)
+      // console.log('[1] receive ' + playerJoinsGame)
+      // console.log('[2] send ' + updatePlayersWaiting)
       socket.emit(updatePlayersWaiting, username)
     })
   }
 
   function receiveUpdatePlayersWaiting() {
     socket.on(updatePlayersWaiting, function(username) {
-      console.log('[2] receive ' + updatePlayersWaiting)
+      // console.log('[2] receive ' + updatePlayersWaiting)
       if (playersWaiting) {
         if (playersWaiting.includes(username)) {
-          console.log('[2] receive ' + username + " but this user is already in game room")
+          // console.log('[2] receive ' + username + " but this user is already in game room")
         } else {
-          console.log('[2] receive ' + username + ' and add it in game room')
+          // console.log('[2] receive ' + username + ' and add it in game room')
           playersWaiting.push(username)
         }
       } else {
-        console.log('[2] receive ' + username + ' but the game is already started')
+        // console.log('[2] receive ' + username + ' but the game is already started')
       }
     })
   }
 
   function receiveDisconnectPlayerWaiting() {
     socket.on(disconnectPlayerWaiting, function(username) {
-      console.log('[3] receive ' + disconnectPlayerWaiting)
+      // console.log('[3] receive ' + disconnectPlayerWaiting)
       if (playersWaiting) {
         if (playersWaiting.includes(username)) {
-          console.log('[3] receive ' + username + ' and remove it from game room')
+          // console.log('[3] receive ' + username + ' and remove it from game room')
           const usernameIndex = playersWaiting.indexOf(username)
           if (usernameIndex > -1) {
             playersWaiting.splice(usernameIndex, 1)
           }
         } else {
-          console.log('[3] receive ' + username + " but this user is not in game room")
+          // console.log('[3] receive ' + username + " but this user is not in game room")
         }
       } else {
-        console.log('[3] receive ' + username + ' but the game is already started')
+        // console.log('[3] receive ' + username + ' but the game is already started')
       }
     })
   }
 
   function receiveStartGame() {
     socket.on(startGame, function(game) {
-      console.log('[4] receive ' + startGame)
+      // console.log('[4] receive ' + startGame)
       vueComponent.errorMessage = ''
       vueComponent.playersWaitingForGameStart = false
       updateVueComponentWith(game)
@@ -393,7 +406,7 @@ function connectSocketIO(vueComponent) {
 
   function receiveGameMove() {
     socket.on(gameId, function(game) {
-      console.log('[5] receive game move')
+      // console.log('[5] receive game move')
       if (game.winner) {
         router.push({
           name: GameEndRoute.name,
