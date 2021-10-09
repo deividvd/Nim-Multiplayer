@@ -6516,6 +6516,10 @@ footer {
   border-color: #FF6300 !important;
 }
 
+.eliminated-player {
+  background-color: gray;
+}
+
 .stick-row {
   width: 100%;
   display: flex;

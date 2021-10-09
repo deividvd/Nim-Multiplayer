@@ -36,6 +36,10 @@
   border-color: $errorColor !important;
 }
 
+.eliminated-player {
+  background-color: gray;
+}
+
 .stick-row {
   width: 100%;
   display: flex;
