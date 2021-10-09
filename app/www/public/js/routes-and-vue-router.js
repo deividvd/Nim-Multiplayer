@@ -1,4 +1,4 @@
-const serverAddress = 'https://192.168.128.15:3000/'
+const serverAddress = 'https://localhost:3000/'
 
 const HomeRoute = {
   path: '/',
