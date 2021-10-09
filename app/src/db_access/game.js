@@ -15,6 +15,7 @@ exports.insertNewGame = function(sticks, standardVictory, turnRotation) {
       disconnectedPlayers: null
     }
   )
+  // newGame.createdAt
   return newGame.save()
 }
 
