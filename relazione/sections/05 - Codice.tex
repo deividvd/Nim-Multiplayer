@@ -1,0 +1,121 @@
+\section{Codice}
+
+\subsection{Front-end}
+
+\subsubsection{Organizzazione (Design) del Codice SCSS}
+
+Il package \texttt{public/scss} rispecchia la struttura del package \texttt{public/js} illustrata nella sezione \ref{design architettura - front-end}. Il package \texttt{public/scss} contiene gli elementi sottostanti.
+\begin{enumerate}
+\item
+	 Il file \texttt{style.scss} che viene eseguito con preprocessor SASS per generare il suo file corrispettivo: \texttt{public/css/style.css}. Quest'ultimo (come già spiegato) è il layer di presentazione da importare in \texttt{www/index.html}.
+	 \newline
+	 Il file \texttt{style.scss} deve contenere solo i selettori SCSS di elementi e classi utilizzate fra due o più rotte.
+\item
+	Il package \texttt{routes}: ogni file contenuto in questo package contiene i selettori SCSS di elementi contenuti in una rotta dell'applicazione; per ogni file contenuto in \texttt{public/js/routes} può esistere 1 o 0 file di presentazione collocato in questo package. 
+\item
+	Il package \texttt{elements}: ogni file contenuto in questo package contiene i selettori SCSS di una porzione di html incapsulata e riutilizzata fra le rotte dell'applicazione; per ogni file contenuto in \texttt{public/js/elements} può esistere 1 o 0 file di presentazione collocato in questo package. 
+\end{enumerate}
+
+\subsubsection{Il "Pattern": \texttt{errorMessage}}
+
+\texttt{errorMessage} è un "pattern" che è stato improvvisato ed inserito in questo progetto per migliorare la leggibilità e la qualità del codice. "Pattern" è posto tra virgolette perché chiaramente non è pattern vero e proprio, e non è neppure una porzione di codice modularizzata, perché purtroppo non è stato trovato alcun modo per farlo. Tuttavia è una forma di codice che è stata ripetuta in più punti a client side, perché si ritiene che sia particolarmente efficace per rendere maggiormente comprensibile il codice.
+
+Molti Vue component (contenuti nei package \texttt{js/routes} o in \texttt{js/elements}) contengono nel proprio insieme di dati, il dato \texttt{errorMessage}. Come suggerisce il nome, questo dato rappresenta il messaggio di errore comunicato all'utente che sta interagendo con l'applicazione. Questo dato viene utilizzato da alcune operazioni come una sorta di stato, per capire se continuare a procedere con l'esecuzione in corso: se \texttt{errorMessage} possiede contenuto, allora si è già verificato un errore e l'operazione non deve procedere, oppure l'operazione deve continuare a verificare se ci sono altri errori da comunicare all'utente, concatenandoli al contenuto di \texttt{errorMessage} generato precedentemente.
+
+Un'altra forma di codice ritenuta molto comprensibile e che spesso accompagna \texttt{errorMessage}, sono le funzioni \texttt{gatherClientSideErrorsFrom(vueComponent)} e \texttt{gatherServerSideErrorsFrom(response)}, i quali si occupano entrambi di "raccogliere" gli errori, elaborare un messaggio di errore, e restituirlo come valore di ritorno con cui impostare il valore di \texttt{errorMessage}.
+\newline
+In alcuni punti si potrebbero avere alcune varianti di queste funzioni, ma l'idea di fondo è piuttosto intuibile e rimane sempre la stessa.
+
+Nel codice sottostante, ecco un esempio di utilizzo di questo "pattern", nel Vue component che rappresenta la pagina di registrazione di un nuovo utente: \texttt{app/www/public/js/routes/user/register.js}.
+\begin{lstlisting}
+...
+	<p v-html="errorMessage" class="error-message"></p>
+...
+data() {
+	return {
+		...
+		errorMessage: '',
+	}
+},
+...
+methods: {
+	register: function(event) {
+		event.preventDefault()
+		this.errorMessage = gatherClientSideErrorsFrom(this)
+		if (this.errorMessage === '') {
+			const credential = {
+				username: this.username,
+				email: this.email,
+				password: this.password
+			}
+			axios.post(serverAddress + 'register', credential)
+			.then((response) => {
+				this.errorMessage = gatherServerSideErrorsFrom(response)
+				if (this.errorMessage === '') {
+					registrationSuccessful(this)
+				}
+			})
+			.catch((error) => { this.errorMessage = error })
+		}
+		
+		function gatherClientSideErrorsFrom(vueComponent) { ... }
+		
+		function gatherServerSideErrorsFrom(response) { ... }
+	}
+...
+\end{lstlisting}
+
+\newpage
+
+\subsubsection{Elementi di Design aggiunti durante l'Implementazione}
+
+Il package \texttt{public/js/routes/utilities} contiene 2 file di utility.
+\begin{itemize}
+\item
+	\texttt{two-page-routing.js} gestisce la navigazione rappresentata dalla storyboard in figura \ref{fig:storyboard - user session}. Questa utility è stata modularizzata in questo modo, perché l'utente può svolgere quella storyboard anche partendo dalla rotta rappresentata dal file \texttt{public/js/routes/create-game-room.js}, di conseguenza sfruttando \texttt{two-page-routing.js} non si ha codice duplicato.
+\item
+	\texttt{session-utilities.js} racchiude varie utility inerenti alla sessione di login dell'utente, applicabili ad un'istanza di Vue. Anche questa scelta di design serve ad applicare il principio DRY, oltre ad incapsulare un insieme di responsabilità ben precise.
+\end{itemize}
+
+\subsection{Back-end}
+
+\subsubsection{Accesso alla Persistenza: directory \texttt{db\_access} e directory \texttt{db\_access/models}}
+\label{persistenza: db_access - Codice}
+
+Nel file \texttt{controller/user.js} si utilizza: \texttt{db\_access/user.js}.
+
+\begin{lstlisting}
+const usersCollection = require('../db_access/user')
+
+...
+
+exports.logIn = function(req, res) {
+	...
+	usersCollection.findUserByUsername(username)
+	...
+\end{lstlisting}
+
+\removeHorizontalSpaceBig Mentre nel file \texttt{db\_access/user.js} si utilizzano: la libreria \texttt{mongoose} per interfacciarsi al database e il suo modello \texttt{db\_access/models/user.js}.
+
+\begin{lstlisting}
+const mongoose = require('mongoose')
+const UserModel = require('./models/user')
+const User = UserModel(mongoose)
+
+...
+
+exports.findUserByUsername = function(username) {
+	return User.findById(username).lean()
+}
+...
+\end{lstlisting}
+
+\newpage
+
+\subsubsection{Un Raro Errore di Interazione}
+
+Se il giocatore di turno (giocatore attivo) invia la mossa nell'esatto momento in cui un altro giocatore si disconnette, entrambi gli eventi potrebbero modificare nello stesso momento l'istanza di gioco salvata nel database, causando comportamenti imprevedibili. È un problema molto raro, ma può comunque verificarsi. Ad ogni modo, esso è facilmente risolvibile inserendo un monitor per regolare l'accesso al database di quella specifica partita, tra i due handler degli eventi.
+
+Non ho implementato questo monitor, sia per mancanza di tempo, sia perché comunque è un problema molto raro, e anche perché non sapevo esattamente come testarlo, poiché dato che è letteralmente impossibile inviare contemporaneamente una mossa e una disconnessione "manualmente" utilizzando due schede diverse del browser, avrei dovuto utilizzare un sistema di test più complesso e non ne sarebbe valsa la pena in termini di tempo speso per realizzarlo e guadagno effettivo nel testare il caso in questione.
+
+\newpage

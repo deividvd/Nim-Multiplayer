@@ -1,0 +1,120 @@
+\section{Requisiti}
+
+\subsection{Funzionali}
+\label{requisiti funzionali}
+
+\begin{itemize}
+\item
+	Registrazione di un nuovo utente e servizio di login.
+\item
+	Creazione di una stanza di gioco e relativi inviti.
+\item
+	Configurare le opzioni di gioco, durante la creazione di una nuova partita.
+	\begin{itemize}
+	\item
+		Scegliere il numero di giocatori.
+	\item
+		Scegliere il numero di righe di bastoncini.
+	\item
+		Scegliere la rotazione dei turni: rotazione oppure chaos.
+	\item
+		Scegliere la modalità di vittoria: Standard oppure Marienbad.
+	\end{itemize}
+\item
+	Gestione di una partita Nim tradizionale (1 vs 1): svolgimento del turno; rotazione dei turni (2 tipologie); modalità di vittoria (2 tipologie).
+	\begin{itemize}
+	\item
+		Svolgimento del turno: durante il proprio turno, la mossa consiste nel rimuovere un numero qualsiasi di bastoncini posti su una qualsiasi e unica riga, ma tali bastoncini devono essere adiacenti e tra loro non vi devono essere altri bastoncini già rimossi (non è possibile saltare la mossa nel proprio turno).
+	\item
+		Rotazione dei turni (2 tipologie).
+		\begin{itemize}
+		\item
+			La tipica rotazione: i giocatori si alternano in un ordine prestabilito per tutta la durata della partita, generato casualmente ad inizio partita.
+		\item
+			Turni \emph{chaos}: il gioco procede a turni casuali, ovvero il gioco sceglierà di far passare il turno casualmente ad un giocatore fra quelli che sono "indietro di un turno".
+		\end{itemize}
+	\item
+		Modalità di vittoria (2 tipologie).
+		\begin{itemize}
+		\item
+			Standard: il giocatore che rimuove l'ultimo bastoncino vince.
+		\item
+			Marienbad: il giocatore che rimuove l'ultimo bastoncino perde.
+		\end{itemize}
+	\end{itemize}
+\item
+	Gestione di una partita multiplayer (fino a 6 giocatori).
+	\begin{itemize}
+	\item
+		Svolgimento del turno e rotazione dei turni: sono identici ai concetti descritti nei punti precedenti.
+	\item
+		Modalità di vittoria (2 tipologie).
+		\begin{itemize}
+		\item
+			Standard: identica a 1 vs 1 (il giocatore che rimuove l'ultimo bastoncino vince, e la partita finisce).
+		\item
+			Marienbad: il giocatore che rimuove l'ultimo bastoncino viene eliminato dalla partita, ed il gioco prosegue nel seguente modo finché non rimarrà un solo giocatore (vincitore). Dopo l'eliminazione di un giocatore, i bastoncini nelle righe vengono tutti ripristinati, ad eccezione dei bastoncini rimossi dai giocatori eliminati.
+		\end{itemize}
+	
+	\newpage
+	
+	\item
+		Gestione delle disconnessioni dei giocatori. Le disconnessioni vengono gestite quando si presenta il turno del giocatore disconnesso.
+		\begin{itemize}
+		\item
+			Vittoria Standard: quando si verifica la disconnessione di un giocatore, quest'ultimo viene eliminato dalla partita senza alterare i bastoncini in gioco.
+		\item
+			Vittoria Marienbad: la disconnessione di un giocatore è considerata come una eliminazione, per cui verranno ripristinati i bastoncini opportuni.
+		\end{itemize}
+	\end{itemize}
+\end{itemize}
+
+\subsection{Non Funzionali}
+
+\begin{itemize}
+\item
+	Connessione sicura tramite https (implementato).
+\item
+	Memorizzazione cifrata delle password nel database (implementato).
+\item
+	Recupero delle credenziali utente, tramite invio di una mail (non implementato).
+\item
+	Giocare una partita come guest non registrato (non implementato).
+\item
+	Osservare una partita (non implementato).
+\item
+	Aggiungere nel server un task dedicato per identificare periodicamente le partite finite e le partite mai iniziate, per poi cancellarle e ridurre ragionevolmente lo spazio di archiviazione del database (non implementato).
+\end{itemize}
+
+\subsection{Requisiti Tecnologici}
+
+L'applicazione verrà realizzata con il solution stack MEVN.
+
+Le comunicazioni real time riguardo la creazione e la gestione della stanza di gioco verranno implementate con la libreria Socket.IO.
+
+\subsection{Requisiti degli Utenti}
+
+Il metodo di design scelto è \emph{user centered design} (UCD), il quale pone il focus sui bisogni degli utenti in modo iterativo, al fine di massimizzare il grado di soddisfazione della \emph{user experience} (UX).
+
+Per questo è stata svolta un'analisi dei \emph{target user}, e sono state simulate alcune \emph{Personas} come modelli "virtuali" di utenti, correlate ad uno \emph{scenario d'uso} specifico. Ecco la lista di \emph{Personas} considerate.
+
+\begin{itemize}
+\item
+	Simone conosce la versione tradizionale di Nim e conosce il "segreto" celato dietro la "complessità" del gioco.
+	\newline
+	Simone gioca partite 1 vs 1, con modalità di vittoria standard, e turni svolti rigorosamente in rotazione.
+\item
+	Eraldo ha giocato sempre e solo la versione tradizionale di Nim con modalità di vittoria Marienbad. Ripudia la vittoria standard perché secondo lui non è la versione originale, pertanto non deve essere giocata.
+	\newline
+	Eraldo gioca partite 1 vs 1, con modalità di vittoria Marienbad, e turni svolti in rotazione.
+\item
+	Ilaria è completamente estranea a giochi matematici e combinatori, tuttavia vorrebbe comunque essere partecipe e giocare insieme ai suoi amici. Talvolta vorrebbe anche poter vincere senza necessariamente dover capire la classe di complessità del gioco.
+	\newline
+	Ilaria gioca partite multiplayer con gli amici, con qualsiasi modalità di vittoria, e turni svolti in modalità chaos.
+\item
+	Lorenzo è il classico nerd che conosce a fondo i giochi matematici e giochi strategici che includono il calcolo combinatorio, a volte si cimenta in tornei di scacchi piuttosto impegnativi. Per lui il Nim è un gioco estremamente semplice e noioso.
+	\newline
+	Lorenzo gioca partite multiplayer con il numero massimo di giocatori consentito, con modalità di vittoria Marienbad (perché le partite sono più lunghe e richiedono un piccolo sforzo mnemonico), e turni svolti rigorosamente in rotazione.
+\end{itemize}
+
+\newpage

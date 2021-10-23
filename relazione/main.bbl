@@ -1,0 +1,17 @@
+\begin{thebibliography}{1}
+
+\bibitem{pencil_website}
+{Evolus}.
+\newblock Pencil website (http://pencil.evolus.vn).
+
+\bibitem{GoF}
+Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides.
+\newblock {\em Design Patterns: Elements of Reusable Object-Oriented Software}.
+\newblock Addison-Wesley Longman Publishing Co., Inc., USA, 1995.
+
+\bibitem{nim_wikipedia}
+{Wikipedia contributors}.
+\newblock Nim --- {Wikipedia}{,} the free encyclopedia, 2021.
+\newblock [Online; accessed 16-September-2021].
+
+\end{thebibliography}

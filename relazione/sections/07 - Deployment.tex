@@ -1,0 +1,27 @@
+\section{Deployment}
+
+Per installare ed eseguire l'applicazione si devono svolgere le seguenti istruzioni.
+\begin{enumerate}
+\item
+	Installare \texttt{MongoDB}. Creare il database \texttt{nim\_multiplayer} e le collezioni \texttt{users} e \texttt{games}. Nella collezione \texttt{users} si devono impostare \texttt{username} e \texttt{mail} come identificativi primari.
+\item
+	Installare \texttt{Node.js} e \texttt{git}.
+\item
+	Clonare il repository:
+	
+	\texttt{git clone https://github.com/deividvd/Nim-Multiplayer/}
+\item
+	Tramite la command line, posizionarsi all'interno di \texttt{Nim-Multiplayer/app/}, e risolvere le dipendenze di \texttt{Node.js}:
+	
+	\texttt{npm install}
+\item
+	Eseguire l'applicazione:
+	
+	\texttt{node index.js}
+\item
+	Utilizzare l'applicazione tramite un browser all'indirizzo (la connessione sarà non sicura perché il certificato https è auto firmato):
+	
+	\texttt{https://localhost:3000}
+\end{enumerate}
+
+\newpage

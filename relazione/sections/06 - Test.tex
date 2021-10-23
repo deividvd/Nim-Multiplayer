@@ -1,0 +1,217 @@
+\section{Test}
+
+\subsection{Acceptance Test}
+
+Il design riportato in \ref{design delle interfacce utente} può essere considerato una sorta di acceptance test.
+
+\subsection{Acceptance e Functional Test degli Errori Utente}
+
+In questa sezione vengono descritti i test riguardo l'utilizzo di ogni pagina con l'obiettivo di generare tutti gli errori possibili (functional test degli errori utente), e verificare la correttezza del messaggio di errore generato, valutandone la qualità in termini di comunicazione con l'utente (acceptance test degli errori utente).
+
+\subsubsection{Network Error}
+
+Un test che può essere eseguito in molteplici punti dell'applicazione, riguarda la visualizzazione dell'assenza di connessione da parte del client o del server durante l'esecuzione di una Axios request, e si può svolgere nel seguente modo.
+
+Prima di fare eseguire all'applicazione una request tramite Axios, si deve arrestare l'esecuzione del server, dopodiché si fa eseguire all'applicazione tale Axios request. In questo modo, dopo qualche secondo Axios genera (a client side) una exception avente come messaggio di errore "Error: Network Error", visibile dall'utente nel HTML paragraph dedicato agli errori (\texttt{errorMessage}).
+
+Dopo questa constatazione, se la request inviata non richiede una situazione particolare per avere successo, si può avviare il server e (senza refreshare la pagina) rieseguire la Axios request fallita precedentemente, la quale questa volta non genera più il Network Error, perché ovviamente ora il server può rispondere.
+
+Si riporta ora un'osservazione riguardo le exception generate da Axios e un test "irrilevante" che è stato eseguito giusto per curiosità. Axios genera le exception basandosi sulla response ricevuta (o non ricevuta, nel caso del Network Error), ad esempio, se Axios riceve HTTP status code 500, allora genera una exception avente come messaggio di errore "Error: Request failed with status code 500". Il test "irrilevante" riguarda proprio questa exception. Viene definito "irrilevante" perché in condizioni normali non dovrebbe mai verificarsi, ad ogni modo, il test eseguito consisteva nel modificare il codice a server side, in modo che il server rispondesse con il codice di errore HTTP 500, ed il client visualizzava l'errore in pagina.
+
+In conclusione, si vuole affermare che, il test "Network Error" equivale al verificare la visualizzazione di un qualsiasi altro errore generato da Axios (il codice che gestisce la visualizzazione del Network Error è lo stesso utilizzato per gestire tutte le eccezioni di Axios), pertanto l'utente è sempre più o meno consapevole della situazione in cui si trova.
+
+\newpage
+
+\subsubsection{Registration Page}
+
+Test da eseguire per innescare tutti gli errori del client side.
+\begin{itemize}
+\item
+	Lasciare tutti gli input field vuoti e cliccare il bottone \textbf{Sign up}, dopodiché leggere il messaggio di errore generato, e inserire i valori negli input field in modo da verificare tutte le combinazioni del messaggio di errore.
+\end{itemize}
+
+\removeHorizontalSpaceBig Test da eseguire per innescare tutti gli errori del server side.
+\begin{itemize}
+\item
+	Inserire un username già esistente nel database.
+\item
+	Inserire una email già esistente nel database.
+\item
+	Inserire un username troppo lungo.
+\item
+	Eseguire il login e visitare questa pagina inserendo nella barra degli indirizzi il suo path (\texttt{/register}), a questo punto si verrà reindirizzati alla home page.
+\end{itemize}
+
+\subsubsection{Login Page}
+
+Test da eseguire per innescare tutti gli errori del client side.
+\begin{itemize}
+\item
+	Lasciare entrambi o 1 degli input field vuoti e cliccare il bottone \textbf{Sign in}.
+\end{itemize}
+
+\removeHorizontalSpaceBig Test da eseguire per innescare tutti gli errori del server side.
+\begin{itemize}
+\item
+	Inserire username e password non esistenti, oppure username e password sbagliati.
+\item
+	Eseguire il login e visitare questa pagina inserendo nella barra degli indirizzi il suo path (\texttt{/login}), a questo punto si verrà reindirizzati alla home page.
+\end{itemize}
+
+\subsubsection{Account Page}
+
+Test da eseguire per innescare tutti gli errori del server side.
+\begin{itemize}
+\item
+	Senza eseguire il login, visitare questa pagina inserendo nella barra degli indirizzi il suo path (\texttt{/account}), a questo punto si verrà reindirizzati alla home page.
+\item
+	Eseguire il login, e aprire questa pagina in 2 schede dello stesso browser, dopodiché effettuare il log out (o cancellare definitivamente l'account) in una pagina e poi cancellare definitivamente l'account (o effettuare il log out) nell'altra.
+\end{itemize}
+
+\newpage
+
+\subsubsection{Create Game Room Page}
+
+Test da eseguire per innescare tutti gli errori del server side.
+\begin{itemize}
+\item
+	Senza eseguire il login, cliccare sul bottone \textbf{CREATE GAME ROOM}.
+\end{itemize}
+
+\subsubsection{Game Room Page - Invite other Players!}
+
+Test da eseguire per innescare tutti gli errori del client side.
+\begin{itemize}
+\item
+	Cliccare sul bottone \textbf{Start Game!} mentre nel game room c'è 1 utente.
+\item
+	Cliccare sul bottone \textbf{Start Game!} mentre nel game room c'è un numero di utenti superiore al numero massimo consentito.
+\end{itemize}
+
+\removeHorizontalSpaceBig Test da eseguire per innescare tutti gli errori del server side.
+\begin{itemize}
+\item
+	Senza eseguire il login, visitare un game room in attesa di giocatori.
+\item
+	Senza eseguire il login (oppure anche dopo aver eseguito il login), visitare la pagina di una partita non esistente (può avere un semplice \_id inventato, ad esempio "abc123", oppure può avere un \_id appartenente a MongoDB, il messaggio di errore generato è lo stesso in entrambi i casi)
+\end{itemize}
+
+\subsubsection{Game Room Page - Time to play the game!}
+
+Test da eseguire per innescare tutti gli errori del client side.
+\begin{itemize}
+\item
+	Durante la partita, rimuovere 0 bastoncini.
+\item
+	Durante la partita, selezionare e rimuovere bastoncini che non sono nella stessa riga.
+\item
+	Durante la partita, selezionare e rimuovere bastoncini nella stessa riga, ma non adiacenti.
+\end{itemize}
+
+\removeHorizontalSpaceBig Test da eseguire per innescare tutti gli errori del server side.
+\begin{itemize}
+\item
+	Eseguire il login, e visitare una pagina di un gioco già iniziato.
+\end{itemize}
+
+\subsubsection{Game End Page}
+
+Test da eseguire per innescare tutti gli errori del server side.
+\begin{itemize}
+\item
+	Senza inviare parametri via POST, visitare questa pagina inserendo nella barra degli indirizzi il suo path (\texttt{/game-end}), a questo punto si verrà reindirizzati alla home page.
+\end{itemize}
+
+\newpage
+
+\subsection{Functional Test del Gioco}
+
+Test da eseguire per verificare il corretto funzionamento del gioco, in particolare per accertarsi che i requisiti siano soddisfatti.
+\newline
+(Lo svolgimento delle partite 1 vs 1, aventi qualsiasi configurazione, è considerato triviale e quindi non viene testato, anche perché il sottoinsieme di questo tipo di partite, viene verificato nei seguenti test riguardo le partite multiplayer.)
+\begin{itemize}
+\item
+	Creare e giocare 2 partite simultaneamente (possono avere gli stessi utenti oppure utenti diversi).
+\item
+	Controllare lo svolgimento dei turni, sia con vittoria Standard, sia con vittoria Marienbad.
+	\begin{itemize}
+	\item
+		I turni in rotazione sono osservabili dall'interfaccia di gioco.
+	\item
+		I turni chaos, per testarli è consigliato svolgere una partita 1 vs 1 oppure svolgere una partita multiplayer con 3 giocatori, e notare che, prima o poi (in modo totalmente non deterministico), un giocatore invece di svolgere 1 turno alternandosi con gli altri giocatori, svolgerà (al massimo) 2 turni consecutivi.
+	\end{itemize}
+\item
+	Verificare lo svolgimento di una partita multiplayer senza disconnessioni. Si ritiene che una partita con 4 giocatori sia ragionevolmente complessa.
+	\begin{itemize}
+	\item
+		Una partita con turni in rotazione e vittoria Standard.
+	\item
+		Una partita con turni in rotazione e vittoria Marienbad.
+	\item
+		Una partita con turni chaos e vittoria Standard.
+	\item
+		Una partita con turni chaos e vittoria Marienbad.
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{Gestione delle Disconnessioni}
+
+Eseguire i seguenti scenari per osservare il comportamento corretto della gestione delle disconnessioni. Si ricorda che le disconnessioni vengono gestite quando si presenta il turno del giocatore disconnesso.
+\newline
+Anche in questo caso, si considera una partita con 4 giocatori, con i \ul{turni in rotazione}, e gli scenari sottostanti devono essere svolti sia con vittoria Standard, sia con vittoria Marienbad.
+\begin{itemize}
+\item
+	Disconnettere il giocatore di turno successivo rispetto al giocatore attivo (1 disconnessione), ed eseguire la mossa del giocatore attivo.
+	
+	Applicare questo scenario in 2 casi.
+	\begin{enumerate}
+		\item
+		Dopo la disconnessione, deve rimanere in gioco un solo giocatore, e quindi vince.
+		\item
+		Dopo la disconnessione, devono rimanere in gioco 2 o più giocatori, e continuare a giocare la partita fino alla fine.
+	\end{enumerate}
+\item
+	Disconnettere i 2 giocatori di turno successivo rispetto al giocatore attivo (2 disconnessioni consecutive), ed eseguire la mossa del giocatore attivo.
+	
+	Applicare questo scenario in 2 casi.
+	\begin{enumerate}
+		\item
+		Dopo le 2 disconnessioni, deve rimanere in gioco un solo giocatore, e quindi vince.
+		\item
+		Dopo le 2 disconnessioni, devono rimanere in gioco 2 o più giocatori, e continuare a giocare la partita fino alla fine.
+	\end{enumerate}
+\item
+	Disconnettere il giocatore di turno (giocatore attivo).
+	
+	Applicare questo scenario in 2 casi.
+	\begin{enumerate}
+		\item
+		Dopo la disconnessione, deve rimanere in gioco un solo giocatore, e quindi vince.
+		\item
+		Dopo la disconnessione, devono rimanere in gioco 2 o più giocatori, e continuare a giocare la partita fino alla fine.
+	\end{enumerate}
+\item
+	Disconnettere il giocatore di turno successivo rispetto al giocatore attivo, e poi disconnettere il giocatore attivo, causando 2 disconnessioni consecutive.
+	
+	Applicare questo scenario in 2 casi.
+	\begin{enumerate}
+	\item
+		Dopo le 2 disconnessioni, deve rimanere in gioco un solo giocatore, e quindi vince.
+	\item
+		Dopo le 2 disconnessioni, devono rimanere in gioco 2 o più giocatori, e continuare a giocare la partita fino alla fine.
+	\end{enumerate}
+\item
+	Disconnettere i 2 giocatori di turno successivo rispetto al giocatore attivo, e poi disconnettere il giocatore attivo, causando 3 disconnessioni consecutive.
+	
+	Applicare questo scenario in 2 casi.
+	\begin{enumerate}
+		\item
+		Dopo le 3 disconnessioni, deve rimanere in gioco un solo giocatore, e quindi vince.
+		\item
+		(Questo è l'unico caso in cui è necessaria una partita con 5 giocatori.) Dopo le 3 disconnessioni, devono rimanere in gioco 2 o più giocatori, e continuare a giocare la partita fino alla fine.
+	\end{enumerate}
+\end{itemize}
+	
+\removeHorizontalSpaceBig Eseguire questi scenari in una partita (sia con vittoria Standard, sia con vittoria Marienbad) con i \ul{turni chaos}, è piuttosto difficile perché la rotazione dei turni è casuale (anche se, in una situazione specifica si può prevedere quale sarà il giocatore attivo successivo, cioè si consideri il caso in cui ci sono 4 giocatori in partita e 2 di essi hanno già svolto il turno, allora si conosce il giocatore attivo ed il prossimo giocatore attivo). Ad ogni modo sono state eseguite svariate prove con i \ul{turni chaos} e sembra funzionare tutto a dovere.
+
+\newpage

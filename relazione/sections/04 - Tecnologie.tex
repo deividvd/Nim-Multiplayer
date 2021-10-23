@@ -1,0 +1,85 @@
+\section{Tecnologie}
+
+L'applicazione è stata realizzata con il solution stack MEVN: MongoDB;
+\newline
+Express.js; Vue.js; Node.js.
+
+All'inizio e durante lo svolgimento del progetto, si è considerato se utilizzare anche un game framework, come ad esempio Phaser, tuttavia questa opzione è stata scartata perché il funzionamento del gioco è estremamente semplice, e per modellarlo è stato sufficiente il solution stack proposto.
+
+Inserire un game framework avrebbe forse reso l'applicazione più "pesante" senza trarre alcun significativo vantaggio, anche se, non conoscendo alcun game framework di Node, mi azzardo a supporre che forse avrebbe potuto rendere il codice del "game room" più modulare e meglio organizzato.
+
+\subsection{Back-end}
+
+\subsubsection{MongoDB}
+
+Come già scritto nel design, la flessibilità di NoSQL e del formato documentale di MongoDB, hanno permesso di svolgere una significativa economia concettuale (le partite si modellano con un solo schema), la quale non sarebbe stata applicabile sfruttando il modello SQL relazionale.
+
+Questo vantaggio è osservabile nello schema che rappresenta una partita: \texttt{app/src/db\_access/models/game.js}.
+
+\subsubsection{Node.js}
+
+Node è una piattaforma software che impiega un modello I/O non bloccante e ad eventi. Per questo, Node è una piattaforma dotata di elevata scalabilità, altamente indicata per \emph{data-intensive real-time} (DIRT) application (tra cui videogiochi online) che gestiscono un elevato numero di connessioni simultanee.
+
+Node possiede il più grande ecosistema di librerie open source al mondo, e in questo progetto sono state utilizzate le seguenti.
+\begin{itemize}
+\item
+	\texttt{mongoose} per interfacciarsi al database.
+\item
+	\texttt{express} per usare il framework Express.js.
+\item
+	\texttt{cors} per impostare le politiche CORS.
+\item
+	\texttt{express-session} per gestire la sessione (cookie) di Express.js.
+\item
+	\texttt{socket.io} per utilizzare la libreria Socket.IO a server side.
+\item
+	\texttt{bcrypt} per cifrare le password nel database.
+\end{itemize}
+
+\subsubsection{Express.js}
+
+Express è un framework server side per applicazioni web, minimale e flessibile. Facilita l'implementazione di API REST in Node.
+
+\newpage
+
+\subsection{Front-end}
+
+\subsubsection{Vue.js}
+
+Vue permette di sviluppare SPA reattive sfruttando il dual-binding tra modello dati e vista. Vue implementa il paradigma \emph{Model-View-ViewModel} (MVVM), in particolare si focalizza sul ViewModel layer che connette la View con il Model attraverso un two way data binding. Vue rende possibile implementare un'applicazione ragionando in termini di dati, variabili e oggetti, astraendosi rispetto al DOM della pagina, seppur usando comunque le viste HTML.
+
+\subsubsection{Bootstrap, CSS e SCSS}
+
+In questo progetto è stato utilizzato SCSS, ovvero un'estensione del linguaggio CSS, eseguito da preprocessor (o transpiler) SASS.
+
+Il linguaggio SCSS viene accompagnato dal framework Bootstrap, il quale offre responsive design e layout liquido.
+
+Bootstrap fornisce davvero tantissime funzionalità e ciò lo rende un framework "pesante". In questo progetto si è sperimentato un'alternativa per alleggerire Bootstrap, ovvero invece di importare l'intera libreria a client-side tramite content delivery network (CDN), Bootstrap è stato inserito a server side tramite il suo corrispondente node module in versione SCSS. Dopodiché nel file di presentazione SCSS (\texttt{app/www/public/scss/style.scss}) sono stati importati ed utilizzati solo gli elementi di Bootstrap necessari per lo stile del progetto, e infine il file SCSS è stato tradotto nel file CSS (\texttt{app/www/public/css/style.css}) da inviare al client.
+
+Innestare Bootstrap nel SCSS in questo modo, comporta alcuni trade-off rispetto ad importarlo tramite CDN.
+\begin{itemize}
+\item
+	Il server di Nim Multiplayer invia un file CSS più grande rispetto al file che dovrebbe inviare tramite la soluzione CDN.
+	
+	Il file CSS inviato dal server di Nim Multiplayer contiene: gli elementi di Bootstrap inclusi nel file SCSS e gli elementi specifici di progetto.
+	
+	Nella soluzione CDN: gli elementi di Bootstrap sono reperibili tutti via CDN e il file CSS inviato dal server di Nim Multiplayer contiene solamente gli elementi specifici di progetto.
+	
+	Il file CSS inviato dal server di Nim Multiplayer, è più piccolo della libreria Bootstrap reperibile tramite CDN.
+	
+	Quindi in questo modo Bootstrap è più "leggero" a client side.
+\item
+	Nel file SCSS è possibile attribuire ai type selector ({\texttt{body}, \texttt{section}, ...}) direttamente le classi degli elementi di Bootstrap (il type selector esegue la \texttt{@extend} delle classi di Bootstrap), in questo modo si evita, in maniera minima, ma rilevante, di inserire le classi di Bootstrap nella parte strutturale di HTML.
+\end{itemize}
+
+\subsection{Back-end e Front-end}
+
+\subsubsection{Socket.IO}
+
+Per le comunicazioni real-time si è scelto di impiegare la libreria Socket.IO.
+
+L'unica feature utilizzata è quella più semplice, e coinvolge solamente il concetto di evento emesso ed ascoltato da un sottoinsieme di client.
+
+Socket.IO fornisce anche il concetto di room (server side), tuttavia non è stato utilizzato questo tipo di astrazione, perché semplicemente non si ha avuto l'esigenza di farlo, ovvero una partita può essere modellata semplicemente come un singolo evento, in cui giunge la mossa svolta dal giocatore attivo oppure la disconnessione di un giocatore.
+
+\newpage
